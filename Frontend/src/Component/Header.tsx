@@ -12,10 +12,7 @@ const Header = () => {
           {/* Brand text */}
           <Link to="/" className="flex flex-col">
             <span className="text-3xl font-extrabold tracking-tight text-black">
-              aaloka
-            </span>
-            <span className="mt-1 text-sm text-black/80 tracking-wide">
-              clothing store
+              Aaloka
             </span>
           </Link>
 
@@ -99,8 +96,17 @@ const Header = () => {
                 ABOUT
               </NavLink>
             </li>
-            <li className="pb-1 cursor-pointer hover:border-b-2 hover:border-white">
-              BAG
+            <li className="pb-1">
+              <NavLink
+                to="/cart"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                BAG
+              </NavLink>
             </li>
             <li className="pb-1 cursor-pointer hover:border-b-2 hover:border-white">
               ACCOUNT

@@ -33,6 +33,9 @@ const Footer = () => {
             <li className="hover:text-white cursor-pointer">
               <Link to="/about">About</Link>
             </li>
+            <li className="hover:text-white cursor-pointer">
+              <Link to="/cart">Bag</Link>
+            </li>
           </ul>
         </div>
 

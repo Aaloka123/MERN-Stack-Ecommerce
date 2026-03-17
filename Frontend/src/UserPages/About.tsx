@@ -8,15 +8,15 @@ const About: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#f3e1c3]">
+    <div className="min-h-screen bg-[#fdedd6]">
       <Header />
 
-      <div className="bg-[#f3e1c3]">
+      <div className="bg-[#fdedd6]">
         {/* Hero Section */}
         <section className="relative bg-[#7b1b2b] text-white py-16 md:py-20">
           <div className="max-w-6xl mx-auto text-center px-6">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-              About <span className="text-[#f3e1c3]">Aaloka Store</span>
+              About <span className="text-[#fdedd6]">Aaloka Store</span>
             </h1>
             <p className="text-lg md:text-xl text-[#fdf4ee] max-w-3xl mx-auto">
               More than fashion — we create timeless stories stitched with love,
@@ -70,7 +70,7 @@ const About: React.FC = () => {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-[#f3e1c3] hover:bg-[#fdf4ee] hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 rounded-2xl p-8 text-center border border-[#e2c9a5]"
+                className="bg-[#fdedd6] hover:bg-[#fdf4ee] hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 rounded-2xl p-8 text-center border border-[#e2c9a5]"
               >
                 {item.icon}
                 <h3 className="text-xl font-semibold mb-3 text-[#7b1b2b]">
