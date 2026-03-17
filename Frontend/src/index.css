@@ -1,1 +1,12 @@
 @import "tailwindcss";
+@import url("https://geist.vercel.app/fonts/geist.css");
+
+:root {
+  font-family: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+body {
+  font-family: inherit;
+  background-color: #f3e1c3;
+}
