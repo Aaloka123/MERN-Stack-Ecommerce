@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
+import { Link, NavLink } from 'react-router-dom';
 import logo from '../assets/logo.png';
 
 const Header = () => {
@@ -9,14 +10,14 @@ const Header = () => {
       <div className="w-full">
         <div className="flex w-full items-center justify-between px-6 lg:px-20 pt-8 pb-6 gap-6">
           {/* Brand text */}
-          <div className="flex flex-col">
+          <Link to="/" className="flex flex-col">
             <span className="text-3xl font-extrabold tracking-tight text-black">
               aaloka
             </span>
             <span className="mt-1 text-sm text-black/80 tracking-wide">
               clothing store
             </span>
-          </div>
+          </Link>
 
           {/* Center logo */}
           <div className="flex justify-center flex-1">
@@ -50,22 +51,58 @@ const Header = () => {
       <div className="w-full px-6 lg:px-20 pb-4 pt-2">
         <div className="w-full bg-[#7b1b2b] shadow-sm">
           <ul className="flex items-center justify-center gap-10 px-8 py-3 text-[11px] sm:text-xs font-semibold tracking-[0.18em] text-white">
-            <li className="border-b-2 border-white pb-1">
-              HOME
+            <li className="pb-1">
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                HOME
+              </NavLink>
             </li>
-            <li className="pb-1 hover:border-b-2 hover:border-white cursor-pointer">
-              SHOP
+            <li className="pb-1">
+              <NavLink
+                to="/shop"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                SHOP
+              </NavLink>
             </li>
-            <li className="pb-1 hover:border-b-2 hover:border-white cursor-pointer">
-              NEW
+            <li className="pb-1">
+              <NavLink
+                to="/new"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                NEW
+              </NavLink>
             </li>
-            <li className="pb-1 hover:border-b-2 hover:border-white cursor-pointer">
-              ABOUT
+            <li className="pb-1">
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                ABOUT
+              </NavLink>
             </li>
-            <li className="pb-1 hover:border-b-2 hover:border-white cursor-pointer">
+            <li className="pb-1 cursor-pointer hover:border-b-2 hover:border-white">
               BAG
             </li>
-            <li className="pb-1 hover:border-b-2 hover:border-white cursor-pointer">
+            <li className="pb-1 cursor-pointer hover:border-b-2 hover:border-white">
               ACCOUNT
             </li>
           </ul>
