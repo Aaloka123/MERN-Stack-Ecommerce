@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import Fimg1 from "../assets/Fimg1.svg";
@@ -83,6 +84,7 @@ const allProducts = [
 ];
 
 const New = () => {
+  const navigate = useNavigate();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceFilter, setPriceFilter] = useState<"under5" | "5to10" | "above10" | null>(
     null
@@ -247,7 +249,8 @@ const New = () => {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="group rounded-xl bg-[#fdedd6] shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                  onClick={() => navigate("/productdetail")}
+                  className="group rounded-xl bg-[#fdedd6] shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
                 >
                   <div className="h-56 bg-[#e0c79f] flex items-center justify-center overflow-hidden">
                     <img
@@ -264,7 +267,10 @@ const New = () => {
                       {product.name}
                     </h2>
                     <p className="text-sm text-gray-700">{product.price}</p>
-                    <button className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors">
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors"
+                    >
                       ADD TO BAG
                     </button>
                   </div>

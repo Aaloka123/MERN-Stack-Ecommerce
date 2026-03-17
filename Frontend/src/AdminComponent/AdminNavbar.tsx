@@ -5,8 +5,8 @@ const AdminNavbar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("ROLE");
+    sessionStorage.removeItem("currentUser");
+    sessionStorage.removeItem("ROLE");
     navigate("/login");
   };
 

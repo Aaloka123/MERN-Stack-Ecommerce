@@ -112,7 +112,7 @@ const AdminUser: React.FC = () => {
                   {filteredUsers.map((user, index) => (
                     <tr key={user.id} className="align-middle">
                       <td className="py-1 pr-4">{index + 1}</td>
-                      <td className="py-1 pr-4">{user.name}</td>
+                     <td className="py-1 pr-4">{user.name}</td>
                       <td className="py-1 pr-4 break-words max-w-[200px]">
                         {user.email}
                       </td>

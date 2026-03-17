@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Icon } from "@iconify/react";
+import { toast } from "react-toastify";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
 
 const AdminSetting: React.FC = () => {
@@ -21,6 +22,9 @@ const AdminSetting: React.FC = () => {
     next?: string;
     confirm?: string;
   }>({});
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +50,7 @@ const AdminSetting: React.FC = () => {
     });
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const next: { old?: string; next?: string; confirm?: string } = {};
@@ -65,10 +69,44 @@ const AdminSetting: React.FC = () => {
     setPasswordErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    console.log("Password changed");
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    // Get current admin email from session
+    let email = "";
+    try {
+      const raw = sessionStorage.getItem("currentUser");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { email?: string; role?: string };
+        if (parsed.email) email = parsed.email;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (!email) {
+      toast.error("Admin email not found. Please log in again.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, oldPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || "Failed to change password");
+        return;
+      }
+
+      toast.success("Admin password updated");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordErrors({});
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to change password");
+    }
   };
 
   return (
@@ -115,12 +153,29 @@ const AdminSetting: React.FC = () => {
                 <label className="block mb-1 font-medium">
                   Current password
                 </label>
-                <input
-                  type="password"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
-                />
+                <div className="relative">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                  >
+                    <Icon
+                      icon={
+                        showOldPassword
+                          ? "mdi:eye-off-outline"
+                          : "mdi:eye-outline"
+                      }
+                      width={18}
+                      height={18}
+                    />
+                  </button>
+                </div>
                 {passwordErrors.old && (
                   <p className="mt-1 text-xs text-red-600">
                     {passwordErrors.old}
@@ -130,12 +185,29 @@ const AdminSetting: React.FC = () => {
 
               <div className="sm:col-span-2">
                 <label className="block mb-1 font-medium">New password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                  >
+                    <Icon
+                      icon={
+                        showNewPassword
+                          ? "mdi:eye-off-outline"
+                          : "mdi:eye-outline"
+                      }
+                      width={18}
+                      height={18}
+                    />
+                  </button>
+                </div>
                 {passwordErrors.next && (
                   <p className="mt-1 text-xs text-red-600">
                     {passwordErrors.next}
@@ -147,12 +219,31 @@ const AdminSetting: React.FC = () => {
                 <label className="block mb-1 font-medium">
                   Confirm password
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdf7f0] px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((prev) => !prev)
+                    }
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                  >
+                    <Icon
+                      icon={
+                        showConfirmPassword
+                          ? "mdi:eye-off-outline"
+                          : "mdi:eye-outline"
+                      }
+                      width={18}
+                      height={18}
+                    />
+                  </button>
+                </div>
                 {passwordErrors.confirm && (
                   <p className="mt-1 text-xs text-red-600">
                     {passwordErrors.confirm}
