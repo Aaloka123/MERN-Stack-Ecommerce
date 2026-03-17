@@ -7,6 +7,7 @@
     category: string;
     price: number;
     stock: number;
+    sizes: string[];
     description: string;
     images: string[];
   };
@@ -18,6 +19,7 @@
       category: "Women",
       price: 8000,
       stock: 14,
+      sizes: ["S", "M", "L", "XL"],
       description: "Warm maroon coat with a relaxed, tailored fit for winter days.",
       images: [],
     },
@@ -27,6 +29,7 @@
       category: "Women",
       price: 6500,
       stock: 22,
+      sizes: ["XS", "S", "M", "L"],
       description: "Lightweight blue dress perfect for summer evenings.",
       images: [],
     },
@@ -36,6 +39,7 @@
       category: "Men",
       price: 4500,
       stock: 30,
+      sizes: ["M", "L", "XL"],
       description: "Everyday white shirt that pairs with anything.",
       images: [],
     },
@@ -49,6 +53,7 @@
     const [category, setCategory] = useState("Women");
     const [price, setPrice] = useState("");
     const [stock, setStock] = useState("");
+    const [sizes, setSizes] = useState<string[]>(["S", "M", "L"]);
     const [errors, setErrors] = useState<{
       name?: string;
       price?: string;
@@ -124,6 +129,7 @@
         category,
         price: priceNum,
         stock: stockNum,
+        sizes,
         description: description.trim(),
         images: images.slice(0, 4),
       };
@@ -132,6 +138,7 @@
       setCategory("Women");
       setPrice("");
       setStock("");
+      setSizes(["S", "M", "L"]);
       setDescription("");
       setPhotos([]);
     };
@@ -239,6 +246,39 @@
                 )}
               </div>
 
+              <div>
+                <label className="block mb-1 font-medium">Sizes</label>
+                <div className="flex flex-wrap gap-2">
+                  {["XS", "S", "M", "L", "XL"].map((size) => {
+                    const checked = sizes.includes(size);
+                    return (
+                      <label
+                        key={size}
+                        className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs cursor-pointer ${
+                          checked
+                            ? "border-[#7b1b2b] bg-[#7b1b2b] text-white"
+                            : "border-[#e2c9a5] bg-[#fdf7f0] text-gray-800"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="hidden"
+                          checked={checked}
+                          onChange={() =>
+                            setSizes((prev) =>
+                              prev.includes(size)
+                                ? prev.filter((s) => s !== size)
+                                : [...prev, size]
+                            )
+                          }
+                        />
+                        <span className="text-xs font-medium">{size}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="sm:col-span-3">
                 <label className="block mb-1 font-medium">Description</label>
                 <textarea
@@ -327,6 +367,7 @@
                       <th className="text-left">Category</th>
                       <th className="text-left">Price</th>
                       <th className="text-left">Stock</th>
+                      <th className="text-left">Sizes</th>
                       <th className="text-left">Description</th>
                       <th className="text-left">Actions</th>
                     </tr>
@@ -340,6 +381,11 @@
                           Rs. {product.price.toLocaleString("en-IN")}
                         </td>
                         <td className="py-1 pr-4">{product.stock}</td>
+                        <td className="py-1 pr-4">
+                          {product.sizes && product.sizes.length
+                            ? product.sizes.join(", ")
+                            : "-"}
+                        </td>
                         <td className="py-1 pr-4 max-w-[220px]">
                           {product.description.length > 80
                             ? product.description.slice(0, 77) + "..."
