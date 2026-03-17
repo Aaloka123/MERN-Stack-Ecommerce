@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Product from "../models/Product.js";
 
 const router = express.Router();
 
@@ -168,6 +169,79 @@ router.delete("/users/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to delete user" });
+  }
+});
+
+// Products: create
+router.post("/products", async (req, res) => {
+  try {
+    const { name, category, price, tag, image, stock, sizes } = req.body;
+    if (!name || !category || typeof price !== "number") {
+      return res
+        .status(400)
+        .json({ message: "Name, category and price are required" });
+    }
+
+    const product = await Product.create({
+      name,
+      category,
+      price,
+      tag: tag || "New",
+      image: image || "",
+      stock: typeof stock === "number" ? stock : 0,
+      sizes: Array.isArray(sizes) ? sizes : [],
+    });
+
+    return res.status(201).json({
+      message: "Product created",
+      product: {
+        id: product._id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+        tag: product.tag,
+        image: product.image,
+        sizes: product.sizes || [],
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to create product" });
+  }
+});
+
+// Products: list all (for shop/new)
+router.get("/products", async (_req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    const mapped = products.map((p) => ({
+      id: p._id.toString(),
+      name: p.name,
+      category: p.category,
+      price: p.price,
+      tag: p.tag || "New",
+      image: p.image || "",
+      sizes: p.sizes || [],
+    }));
+    return res.json({ products: mapped });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to load products" });
+  }
+});
+
+// Products: delete by id (admin)
+router.delete("/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Product.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    return res.json({ message: "Product deleted" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to delete product" });
   }
 });
 

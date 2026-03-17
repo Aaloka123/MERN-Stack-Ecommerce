@@ -1,90 +1,19 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
-import Fimg1 from "../assets/Fimg1.svg";
-import Fimg2 from "../assets/Fimg2.svg";
-import Fimg3 from "../assets/Fimg3.svg";
-
-const productImages = [Fimg1, Fimg2, Fimg3];
-
-const allProducts = [
-  {
-    id: 1,
-    name: "New Maroon Coat",
-    category: "Women",
-    price: 8200,
-    tag: "New",
-    image: Fimg1,
-  },
-  {
-    id: 2,
-    name: "Soft Blue Dress",
-    category: "Women",
-    price: 6900,
-    tag: "New",
-    image: Fimg2,
-  },
-  {
-    id: 3,
-    name: "Relaxed Linen Shirt",
-    category: "Men",
-    price: 5200,
-    tag: "New",
-    image: Fimg3,
-  },
-  {
-    id: 4,
-    name: "Striped Casual Tee",
-    category: "Men",
-    price: 3100,
-    tag: "New",
-    image: Fimg1,
-  },
-  {
-    id: 5,
-    name: "Layered Skirt",
-    category: "Women",
-    price: 4800,
-    tag: "New",
-    image: Fimg2,
-  },
-  {
-    id: 6,
-    name: "Cozy Cardigan",
-    category: "Women",
-    price: 9500,
-    tag: "New",
-    image: Fimg3,
-  },
-  {
-    id: 7,
-    name: "Textured Scarf",
-    category: "Accessories",
-    price: 2200,
-    tag: "New",
-    image: productImages[0],
-  },
-  {
-    id: 8,
-    name: "Leather Shoulder Bag",
-    category: "Accessories",
-    price: 11500,
-    tag: "New",
-    image: productImages[1],
-  },
-  {
-    id: 9,
-    name: "Subtle Gold Necklace",
-    category: "Accessories",
-    price: 13500,
-    tag: "New",
-    image: productImages[2],
-  },
-];
+type Product = {
+  id: string | number;
+  name: string;
+  category: string;
+  price: number;
+  tag: string;
+  image: string;
+};
 
 const New = () => {
   const navigate = useNavigate();
+  const [serverProducts, setServerProducts] = useState<Product[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceFilter, setPriceFilter] = useState<"under5" | "5to10" | "above10" | null>(
     null
@@ -103,8 +32,23 @@ const New = () => {
     setSortBy("newest");
   };
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          setServerProducts(data.products as Product[]);
+        }
+      } catch {
+        // ignore, fallback to static products
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const products = useMemo(() => {
-    let result = [...allProducts];
+    let result = [...serverProducts];
 
     if (selectedCategories.length) {
       result = result.filter((p) => selectedCategories.includes(p.category));
@@ -123,11 +67,11 @@ const New = () => {
     } else if (sortBy === "high") {
       result.sort((a, b) => b.price - a.price);
     } else if (sortBy === "newest") {
-      result.sort((a, b) => b.id - a.id);
+      result.sort((a, b) => Number(b.id) - Number(a.id));
     }
 
     return result;
-  }, [selectedCategories, priceFilter, sortBy]);
+  }, [serverProducts, selectedCategories, priceFilter, sortBy]);
   return (
     <div className="min-h-screen bg-[#fdedd6]">
       <Header />

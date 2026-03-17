@@ -1,5 +1,6 @@
-  import React, { useState } from "react";
+  import React, { useEffect, useState } from "react";
   import AdminNavbar from "../AdminComponent/AdminNavbar";
+  import { toast } from "react-toastify";
 
   type AdminProductRecord = {
     id: string;
@@ -12,38 +13,7 @@
     images: string[];
   };
 
-  const INITIAL_PRODUCTS: AdminProductRecord[] = [
-    {
-      id: "P-101",
-      name: "Maroon Long Coat",
-      category: "Women",
-      price: 8000,
-      stock: 14,
-      sizes: ["S", "M", "L", "XL"],
-      description: "Warm maroon coat with a relaxed, tailored fit for winter days.",
-      images: [],
-    },
-    {
-      id: "P-102",
-      name: "Blue Summer Dress",
-      category: "Women",
-      price: 6500,
-      stock: 22,
-      sizes: ["XS", "S", "M", "L"],
-      description: "Lightweight blue dress perfect for summer evenings.",
-      images: [],
-    },
-    {
-      id: "P-103",
-      name: "White Casual Shirt",
-      category: "Men",
-      price: 4500,
-      stock: 30,
-      sizes: ["M", "L", "XL"],
-      description: "Everyday white shirt that pairs with anything.",
-      images: [],
-    },
-  ];
+  const INITIAL_PRODUCTS: AdminProductRecord[] = [];
 
   const AdminProduct: React.FC = () => {
     const [products, setProducts] =
@@ -84,7 +54,38 @@
       e.target.value = "";
     };
 
-    const handleAdd = (e: React.FormEvent) => {
+    useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const res = await fetch("http://localhost:5000/api/auth/products");
+          const data = await res.json();
+          if (!res.ok) {
+            toast.error(data.message || "Failed to load products");
+            return;
+          }
+          if (Array.isArray(data.products)) {
+            setProducts(
+              data.products.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                category: p.category,
+                price: p.price,
+                stock: 0,
+                sizes: p.sizes || [],
+                description: "",
+                images: p.image ? [p.image] : [],
+              }))
+            );
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to load products");
+        }
+      };
+      fetchProducts();
+    }, []);
+
+    const handleAdd = async (e: React.FormEvent) => {
       e.preventDefault();
       const nextErrors: {
         name?: string;
@@ -123,29 +124,73 @@
       setErrors(nextErrors);
       if (Object.keys(nextErrors).length > 0) return;
 
-      const next: AdminProductRecord = {
-        id: `P-${Math.floor(100 + Math.random() * 900)}`,
-        name: name.trim(),
-        category,
-        price: priceNum,
-        stock: stockNum,
-        sizes,
-        description: description.trim(),
-        images: images.slice(0, 4),
-      };
-      setProducts((prev) => [next, ...prev]);
-      setName("");
-      setCategory("Women");
-      setPrice("");
-      setStock("");
-      setSizes(["S", "M", "L"]);
-      setDescription("");
-      setPhotos([]);
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            category,
+            price: priceNum,
+            stock: stockNum,
+            tag: "New",
+            image: images[0] || "",
+            sizes,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.message || "Failed to add product");
+          return;
+        }
+
+        const created = data.product;
+        const next: AdminProductRecord = {
+          id: created.id,
+          name: created.name,
+          category: created.category,
+          price: created.price,
+          stock: stockNum,
+          sizes,
+          description: description.trim(),
+          images: images.slice(0, 4),
+        };
+        setProducts((prev) => [next, ...prev]);
+        setName("");
+        setCategory("Women");
+        setPrice("");
+        setStock("");
+        setSizes(["S", "M", "L"]);
+        setDescription("");
+        setPhotos([]);
+        setErrors({});
+        toast.success("Product added");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to add product");
+      }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
       if (!window.confirm("Remove this product?")) return;
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/auth/products/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.message || "Failed to delete product");
+          return;
+        }
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+        toast.success("Product deleted");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to delete product");
+      }
     };
 
     const filteredProducts = products.filter((p) => {

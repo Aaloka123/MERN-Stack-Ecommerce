@@ -1,90 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
-import Fimg1 from "../assets/Fimg1.svg";
-import Fimg2 from "../assets/Fimg2.svg";
-import Fimg3 from "../assets/Fimg3.svg";
 
-const productImages = [Fimg1, Fimg2, Fimg3];
-
-const allProducts = [
-  {
-    id: 1,
-    name: "Maroon Long Coat",
-    category: "Women",
-    price: 8000,
-    tag: "New",
-    image: Fimg1,
-  },
-  {
-    id: 2,
-    name: "Blue Summer Dress",
-    category: "Women",
-    price: 6500,
-    tag: "Best Seller",
-    image: Fimg2,
-  },
-  {
-    id: 3,
-    name: "Casual White Shirt",
-    category: "Men",
-    price: 4500,
-    tag: "Trending",
-    image: Fimg3,
-  },
-  {
-    id: 4,
-    name: "Classic Denim Jacket",
-    category: "Men",
-    price: 9000,
-    tag: "New",
-    image: Fimg1,
-  },
-  {
-    id: 5,
-    name: "Everyday T‑Shirt",
-    category: "Women",
-    price: 2500,
-    tag: "Trending",
-    image: Fimg2,
-  },
-  {
-    id: 6,
-    name: "Printed Summer Skirt",
-    category: "Women",
-    price: 5200,
-    tag: "Best Seller",
-    image: Fimg3,
-  },
-  {
-    id: 7,
-    name: "Leather Belt",
-    category: "Accessories",
-    price: 3000,
-    tag: "New",
-    image: productImages[0],
-  },
-  {
-    id: 8,
-    name: "Statement Handbag",
-    category: "Accessories",
-    price: 12000,
-    tag: "Best Seller",
-    image: productImages[1],
-  },
-  {
-    id: 9,
-    name: "Minimalist Watch",
-    category: "Accessories",
-    price: 15000,
-    tag: "Trending",
-    image: productImages[2],
-  },
-];
+type Product = {
+  id: string | number;
+  name: string;
+  category: string;
+  price: number;
+  tag: string;
+  image: string;
+};
 
 const Shop = () => {
   const navigate = useNavigate();
+  const [serverProducts, setServerProducts] = useState<Product[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceFilter, setPriceFilter] = useState<"under5" | "5to10" | "above10" | null>(
     null
@@ -105,8 +35,23 @@ const Shop = () => {
     setSortBy("featured");
   };
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          setServerProducts(data.products as Product[]);
+        }
+      } catch {
+        // ignore, fallback to static
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const products = useMemo(() => {
-    let result = [...allProducts];
+    let result = [...serverProducts];
 
     if (selectedCategories.length) {
       result = result.filter((p) => selectedCategories.includes(p.category));
@@ -125,11 +70,11 @@ const Shop = () => {
     } else if (sortBy === "high") {
       result.sort((a, b) => b.price - a.price);
     } else if (sortBy === "newest") {
-      result.sort((a, b) => b.id - a.id);
+      result.sort((a, b) => Number(b.id) - Number(a.id));
     }
 
     return result;
-  }, [selectedCategories, priceFilter, sortBy]);
+  }, [serverProducts, selectedCategories, priceFilter, sortBy]);
   return (
     <div className="min-h-screen bg-[#fdedd6]">
       <Header />

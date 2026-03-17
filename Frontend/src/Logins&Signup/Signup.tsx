@@ -1,19 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import google from "../assets/google.svg";
-
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  phone?: string;
-  password: string;
-  role: string;
-}
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -31,6 +22,30 @@ const Signup: React.FC = () => {
     password?: string;
     confirmPassword?: string;
   }>({});
+  const [sampleProducts, setSampleProducts] = useState<
+    { id: string; name: string; price: number }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          setSampleProducts(
+            data.products.slice(0, 3).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+            }))
+          );
+        }
+      } catch {
+        // ignore
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const validate = () => {
     const newErrors: {
@@ -109,7 +124,7 @@ const Signup: React.FC = () => {
       <Header />
 
       <main className="flex-1 flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-2xl bg-[#f7ddbc] shadow-md px-8 py-10">
+        <div className="w-full max-w-3xl grid gap-8 md:grid-cols-2 rounded-2xl bg-[#f7ddbc] shadow-md px-8 py-10">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#7b1b2b] text-center">
             Create account
           </h1>
