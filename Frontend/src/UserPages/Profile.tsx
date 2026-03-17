@@ -3,14 +3,18 @@ import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 
 type StoredUser = {
+  // for older local users
   fullName?: string;
+  // for backend users
+  name?: string;
   email?: string;
+  phone?: string;
   role?: string;
 };
 
 const getCurrentUser = (): StoredUser | null => {
   try {
-    const raw = localStorage.getItem("currentUser");
+    const raw = sessionStorage.getItem("currentUser");
     return raw ? (JSON.parse(raw) as StoredUser) : null;
   } catch {
     return null;
@@ -28,6 +32,7 @@ const getInitials = (name?: string) => {
 const Profile: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState("user");
   const [loaded, setLoaded] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -42,8 +47,10 @@ const Profile: React.FC = () => {
   const loadFromStorage = () => {
     const user = getCurrentUser();
     if (user) {
-      setFullName(user.fullName || "");
+      // prefer backend `name`, fall back to older `fullName`
+      setFullName(user.name || user.fullName || "");
       setEmail(user.email || "");
+      setPhone(user.phone || "");
       setRole(user.role || "user");
     }
   };
@@ -86,7 +93,7 @@ const Profile: React.FC = () => {
       role: role || current.role,
       ...(newPassword ? { password: newPassword } : {}),
     };
-    localStorage.setItem("currentUser", JSON.stringify(updated));
+    sessionStorage.setItem("currentUser", JSON.stringify(updated));
 
     // Also update in 'users' list if present
     try {
@@ -118,8 +125,8 @@ const Profile: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("ROLE");
+    sessionStorage.removeItem("currentUser");
+    sessionStorage.removeItem("ROLE");
     window.location.href = "/login";
   };
 
@@ -142,8 +149,8 @@ const Profile: React.FC = () => {
       // ignore failures
     }
 
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("ROLE");
+    sessionStorage.removeItem("currentUser");
+    sessionStorage.removeItem("ROLE");
     window.location.href = "/";
   };
 
@@ -160,7 +167,7 @@ const Profile: React.FC = () => {
             View the details linked to your Aaloka account.
           </p>
 
-          {loaded && fullName ? (
+          {loaded && (fullName || email) ? (
             isEditing ? (
               <form
                 onSubmit={handleSave}

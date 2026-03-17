@@ -1,9 +1,13 @@
-import React from 'react';
-import { Icon } from '@iconify/react';
-import { Link, NavLink } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import React from "react";
+import { Icon } from "@iconify/react";
+import { Link, NavLink } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Header = () => {
+  const isLoggedIn =
+    typeof window !== "undefined" &&
+    !!sessionStorage.getItem("currentUser");
+
   return (
     <header className="w-full bg-[#f3e1c3]">
       {/* Top bar: brand, logo, search */}
@@ -110,14 +114,16 @@ const Header = () => {
             </li>
             <li className="pb-1">
               <NavLink
-                to="/login"
+                to={isLoggedIn ? "/profile" : "/login"}
                 className={({ isActive }) =>
                   `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                    isActive
+                      ? "border-b-2 border-white"
+                      : "hover:border-b-2 hover:border-white"
                   }`
                 }
               >
-                ACCOUNT
+                {isLoggedIn ? "PROFILE" : "ACCOUNT"}
               </NavLink>
             </li>
           </ul>

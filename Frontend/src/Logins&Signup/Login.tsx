@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
+import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import google from "../assets/google.svg";
@@ -31,15 +32,49 @@ const Login: React.FC = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors = validate();
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      // Placeholder for real auth call
-      console.log("Logging in with", formData);
-      navigate("/");
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Login failed");
+        return;
+      }
+
+      if (data.token) {
+        sessionStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        sessionStorage.setItem("currentUser", JSON.stringify(data.user));
+        sessionStorage.setItem("ROLE", data.user.role || "user");
+      }
+
+      toast.success("Login successful!");
+
+      const userRole = data.user?.role || "user";
+      if (userRole === "admin") {
+        navigate("/admindashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
