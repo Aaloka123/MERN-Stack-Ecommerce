@@ -9,6 +9,7 @@ interface User {
   id: string;
   fullName: string;
   email: string;
+  phone?: string;
   password: string;
   role: string;
 }
@@ -17,6 +18,7 @@ const Signup: React.FC = () => {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +26,7 @@ const Signup: React.FC = () => {
   const [errors, setErrors] = useState<{
     fullName?: string;
     email?: string;
+    phone?: string;
     password?: string;
     confirmPassword?: string;
   }>({});
@@ -32,6 +35,7 @@ const Signup: React.FC = () => {
     const newErrors: {
       fullName?: string;
       email?: string;
+      phone?: string;
       password?: string;
       confirmPassword?: string;
     } = {};
@@ -42,6 +46,12 @@ const Signup: React.FC = () => {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Please enter a valid email";
+    }
+
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^[0-9]{10}$/.test(phone)) {
+      newErrors.phone = "Enter a valid 10 digit number";
     }
 
     if (!password.trim()) {
@@ -70,6 +80,7 @@ const Signup: React.FC = () => {
       id: Date.now().toString(),
       fullName,
       email,
+      phone,
       password,
       role: "user",
     };
@@ -133,6 +144,25 @@ const Signup: React.FC = () => {
               />
               {errors.email && (
                 <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium">Phone number</label>
+              <input
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
+                value={phone}
+                onChange={(e) =>
+                  setPhone(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))
+                }
+                className="w-full rounded-lg border border-[#e2c9a5] bg-[#fdedd6] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                placeholder="10 digit mobile"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-xs text-red-600">{errors.phone}</p>
               )}
             </div>
 
