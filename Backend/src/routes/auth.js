@@ -73,5 +73,103 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/update-profile", async (req, res) => {
+  try {
+    const { email, name, newEmail, phone } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name) user.name = name;
+    if (typeof phone === "string") user.phone = phone;
+    if (newEmail) user.email = newEmail;
+
+    await user.save();
+
+    return res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/change-password", async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    if (!email || !oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Email, old password and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Old password is incorrect" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    return res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Admin: get all users (oldest signup first)
+router.get("/users", async (_req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: 1 });
+    const mapped = users.map((u) => ({
+      id: u._id.toString(),
+      name: u.name,
+      email: u.email,
+      phone: u.phone || "",
+      role: u.role,
+      createdAt: u.createdAt,
+    }));
+    return res.json({ users: mapped });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to load users" });
+  }
+});
+
+// Admin: delete user by id
+router.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await User.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.json({ message: "User deleted" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to delete user" });
+  }
+});
+
 export default router;
 

@@ -1,47 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
+import { toast } from "react-toastify";
 
 type AdminUserRecord = {
   id: string;
-  fullName: string;
+  name: string;
   email: string;
   phone: string;
+  role: string;
 };
 
-const STATIC_USERS: AdminUserRecord[] = [
-  {
-    id: "U-101",
-    fullName: "Aaloka Demo",
-    email: "aaloka@example.com",
-    phone: "9876543210",
-  },
-  {
-    id: "U-102",
-    fullName: "Saanvi Patel",
-    email: "saanvi@example.com",
-    phone: "9876501234",
-  },
-  {
-    id: "U-103",
-    fullName: "Arjun Mehra",
-    email: "arjun@example.com",
-    phone: "9876512345",
-  },
-];
-
 const AdminUser: React.FC = () => {
-  const [users, setUsers] = useState<AdminUserRecord[]>(STATIC_USERS);
+  const [users, setUsers] = useState<AdminUserRecord[]>([]);
   const [search, setSearch] = useState("");
-  const handleDelete = (id: string) => {
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/admin/users");
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.message || "Failed to load users");
+          return;
+        }
+        setUsers(data.users || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load users");
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this user from the list?")) return;
-    setUsers((prev) => prev.filter((u) => u.id !== id));
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/admin/users/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || "Failed to delete user");
+        return;
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      toast.success("User deleted");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete user");
+    }
   };
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users
+    // show only non-admin users
+    .filter((user) => user.role !== "admin")
+    .filter((user) => {
     const term = search.trim().toLowerCase();
     if (!term) return true;
     return (
-      user.fullName.toLowerCase().includes(term) ||
+      user.name.toLowerCase().includes(term) ||
       user.email.toLowerCase().includes(term) ||
       user.phone.toLowerCase().includes(term)
     );
@@ -80,6 +101,7 @@ const AdminUser: React.FC = () => {
               <table className="min-w-full border-separate border-spacing-y-2">
                 <thead className="text-xs uppercase tracking-[0.16em] text-gray-500">
                   <tr>
+                    <th className="text-left">ID</th>
                     <th className="text-left">Name</th>
                     <th className="text-left">Email</th>
                     <th className="text-left">Phone</th>
@@ -87,9 +109,10 @@ const AdminUser: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => (
+                  {filteredUsers.map((user, index) => (
                     <tr key={user.id} className="align-middle">
-                      <td className="py-1 pr-4">{user.fullName}</td>
+                      <td className="py-1 pr-4">{index + 1}</td>
+                      <td className="py-1 pr-4">{user.name}</td>
                       <td className="py-1 pr-4 break-words max-w-[200px]">
                         {user.email}
                       </td>

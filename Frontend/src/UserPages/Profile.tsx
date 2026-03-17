@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { Icon } from "@iconify/react";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 
 type StoredUser = {
+  id?: string;
   // for older local users
   fullName?: string;
   // for backend users
@@ -35,6 +38,7 @@ const Profile: React.FC = () => {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("user");
   const [loaded, setLoaded] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -43,6 +47,9 @@ const Profile: React.FC = () => {
     email?: string;
     password?: string;
   }>({});
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const loadFromStorage = () => {
     const user = getCurrentUser();
@@ -60,7 +67,7 @@ const Profile: React.FC = () => {
     setLoaded(true);
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const nextErrors: {
@@ -75,50 +82,78 @@ const Profile: React.FC = () => {
       nextErrors.email = "Please enter a valid email";
     }
 
-    if (newPassword || confirmPassword) {
-      if (newPassword.length < 6) {
-        nextErrors.password = "Password must be at least 6 characters";
+    if (oldPassword || newPassword || confirmPassword) {
+      if (!oldPassword) {
+        nextErrors.password = "Old password is required";
+      } else if (newPassword.length < 6) {
+        nextErrors.password = "New password must be at least 6 characters";
       } else if (newPassword !== confirmPassword) {
-        nextErrors.password = "Passwords do not match";
+        nextErrors.password = "New password and confirm password do not match";
       }
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     const current = getCurrentUser() || {};
-    const updated: StoredUser & { password?: string } = {
-      ...current,
-      fullName,
-      email,
-      role: role || current.role,
-      ...(newPassword ? { password: newPassword } : {}),
-    };
-    sessionStorage.setItem("currentUser", JSON.stringify(updated));
 
-    // Also update in 'users' list if present
+    // 1) update profile (name, email, phone) in backend
     try {
-      const rawUsers = localStorage.getItem("users");
-      if (rawUsers) {
-        const users = JSON.parse(rawUsers) as Array<any>;
-        const idx = users.findIndex(
-          (u) =>
-            (u.email && u.email === current.email) ||
-            (u.fullName && u.fullName === current.fullName)
-        );
-        if (idx !== -1) {
-          users[idx] = {
-            ...users[idx],
-            fullName,
-            email,
-            ...(newPassword ? { password: newPassword } : {}),
-          };
-          localStorage.setItem("users", JSON.stringify(users));
-        }
+      const res = await fetch("http://localhost:5000/api/auth/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: current.email || email,
+          name: fullName,
+          newEmail: email,
+          phone,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message || "Failed to update profile");
+        return;
       }
-    } catch {
-      // ignore if users is missing or invalid
+
+      const updated: StoredUser = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        phone: data.user.phone,
+        role: data.user.role,
+      };
+      sessionStorage.setItem("currentUser", JSON.stringify(updated));
+      toast.success("Profile updated");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update profile");
+      return;
     }
 
+    // 2) change password if requested
+    if (oldPassword && newPassword && confirmPassword) {
+      try {
+        const res = await fetch(
+          "http://localhost:5000/api/auth/change-password",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, oldPassword, newPassword }),
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.message || "Failed to change password");
+          return;
+        }
+        toast.success("Password changed");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to change password");
+        return;
+      }
+    }
+
+    setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
     setIsEditing(false);
@@ -133,8 +168,9 @@ const Profile: React.FC = () => {
   const handleDeleteAccount = () => {
     if (!window.confirm("Delete your account permanently?")) return;
 
+    const current = getCurrentUser();
+
     try {
-      const current = getCurrentUser();
       const rawUsers = localStorage.getItem("users");
       if (current && rawUsers) {
         const users = JSON.parse(rawUsers) as Array<any>;
@@ -147,6 +183,24 @@ const Profile: React.FC = () => {
       }
     } catch {
       // ignore failures
+    }
+
+    // Delete from backend if we have an id
+    if (current?.id) {
+      fetch(`http://localhost:5000/api/admin/users/${current.id}`, {
+        method: "DELETE",
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            toast.error(data.message || "Failed to delete account");
+            return;
+          }
+          toast.success("Account deleted");
+        })
+        .catch(() => {
+          toast.error("Failed to delete account");
+        });
     }
 
     sessionStorage.removeItem("currentUser");
@@ -222,27 +276,91 @@ const Profile: React.FC = () => {
 
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[#7b1b2b]/80">
+                      Old password
+                    </p>
+                    <div className="relative">
+                      <input
+                        type={showOldPassword ? "text" : "password"}
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="mt-1 w-full rounded-lg bg-[#fdedd6] px-3 py-2 pr-10 border border-[#e2c9a5] focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                      >
+                        <Icon
+                          icon={
+                            showOldPassword
+                              ? "mdi:eye-off-outline"
+                              : "mdi:eye-outline"
+                          }
+                          width={18}
+                          height={18}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[#7b1b2b]/80">
                       New password
                     </p>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg bg-[#fdedd6] px-3 py-2 border border-[#e2c9a5] focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
-                      placeholder="Leave blank to keep current password"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="mt-1 w-full rounded-lg bg-[#fdedd6] px-3 py-2 pr-10 border border-[#e2c9a5] focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                      >
+                        <Icon
+                          icon={
+                            showNewPassword
+                              ? "mdi:eye-off-outline"
+                              : "mdi:eye-outline"
+                          }
+                          width={18}
+                          height={18}
+                        />
+                      </button>
+                    </div>
                   </div>
 
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[#7b1b2b]/80">
                       Confirm new password
                     </p>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="mt-1 w-full rounded-lg bg-[#fdedd6] px-3 py-2 border border-[#e2c9a5] focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="mt-1 w-full rounded-lg bg-[#fdedd6] px-3 py-2 pr-10 border border-[#e2c9a5] focus:outline-none focus:ring-2 focus:ring-[#7b1b2b]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword((prev) => !prev)
+                        }
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#7b1b2b]/80 hover:text-[#7b1b2b]"
+                      >
+                        <Icon
+                          icon={
+                            showConfirmPassword
+                              ? "mdi:eye-off-outline"
+                              : "mdi:eye-outline"
+                          }
+                          width={18}
+                          height={18}
+                        />
+                      </button>
+                    </div>
                     {errors.password && (
                       <p className="mt-1 text-xs text-red-600">
                         {errors.password}
@@ -262,6 +380,7 @@ const Profile: React.FC = () => {
                         type="button"
                         onClick={() => {
                           loadFromStorage();
+                          setOldPassword("");
                           setNewPassword("");
                           setConfirmPassword("");
                           setErrors({});
