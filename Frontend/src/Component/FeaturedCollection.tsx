@@ -1,18 +1,38 @@
-import React from "react";
-import Timg1 from "../assets/Timg1.svg";
-import Timg2 from "../assets/Timg2.svg";
-import Timg3 from "../assets/Timg3.svg";
-import Timg4 from "../assets/Timg4.svg";
-import { Icon } from '@iconify/react';
+import React, { useEffect, useState } from "react";
+import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 
+type Product = {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+};
+
 const FeaturedCollection = () => {
-  const items = [
-    { id: 1, img: Timg1, name: "Marron Long Coat", price: "RS. 8000.0" },
-    { id: 2, img: Timg2, name: "Marron Long Coat", price: "RS. 8000.0" },
-    { id: 3, img: Timg3, name: "Marron Long Coat", price: "RS. 8000.0" },
-    { id: 4, img: Timg4, name: "White Tshirt", price: "RS. 8000.0" },
-  ];
+  const [items, setItems] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          setItems(
+            data.products.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: p.image,
+            }))
+          );
+        }
+      } catch {
+        // ignore, keep empty
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   return (
     <div className="bg-secondaray px-4 sm:px-8 lg:px-20 py-12">
@@ -30,15 +50,15 @@ const FeaturedCollection = () => {
 
       {/* Responsive flex like Top Picks JSON */}
       <div className="flex flex-wrap justify-between gap-4 mt-6">
-        {items.map(({ id, img, name, price }) => (
+        {items.map(({ id, image, name, price }) => (
           <div
             key={id}
             className="w-full sm:w-[48%] lg:w-[23%] text-center group cursor-pointer transition-all duration-300"
           >
-            <Link to={`/`}>
+            <Link to={`/productdetail/${id}`}>
               <div className="overflow-hidden rounded-lg">
                 <img
-                  src={img}
+                  src={image}
                   alt={name}
                   className="w-full h-auto max-h-96 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
@@ -49,7 +69,7 @@ const FeaturedCollection = () => {
               {name}
             </p>
             <p className="text-gray-500 transition-colors duration-300 group-hover:text-primary">
-              {price}
+              Rs. {price.toLocaleString("en-IN")}
             </p>
           </div>
         ))}

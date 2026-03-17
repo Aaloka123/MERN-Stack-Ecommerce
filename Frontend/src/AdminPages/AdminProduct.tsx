@@ -30,9 +30,11 @@
       stock?: string;
       description?: string;
       photos?: string;
+      sizes?: string;
     }>({});
     const [description, setDescription] = useState("");
     const [photos, setPhotos] = useState<string[]>([]);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const handlePhotosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = (e.target.files || [])[0];
@@ -65,16 +67,24 @@
           }
           if (Array.isArray(data.products)) {
             setProducts(
-              data.products.map((p: any) => ({
-                id: p.id,
-                name: p.name,
-                category: p.category,
-                price: p.price,
-                stock: 0,
-                sizes: p.sizes || [],
-                description: "",
-                images: p.image ? [p.image] : [],
-              }))
+              data.products.map((p: any) => {
+                const images: string[] =
+                  Array.isArray(p.images) && p.images.length
+                    ? p.images
+                    : p.image
+                    ? [p.image]
+                    : [];
+                return {
+                  id: p.id,
+                  name: p.name,
+                  category: p.category,
+                  price: p.price,
+                  stock: 0,
+                  sizes: p.sizes || [],
+                  description: "",
+                  images,
+                };
+              })
             );
           }
         } catch (err) {
@@ -85,7 +95,7 @@
       fetchProducts();
     }, []);
 
-    const handleAdd = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const nextErrors: {
         name?: string;
@@ -93,6 +103,7 @@
         stock?: string;
         description?: string;
         photos?: string;
+        sizes?: string;
       } = {};
 
       if (!name.trim()) nextErrors.name = "Name is required";
@@ -116,6 +127,10 @@
         nextErrors.description = "Description is required";
       }
 
+      if (!sizes.length) {
+        nextErrors.sizes = "Select at least one size";
+      }
+
       const images = photos.filter(Boolean);
       if (images.length === 0) {
         nextErrors.photos = "Add at least one product image URL";
@@ -125,17 +140,24 @@
       if (Object.keys(nextErrors).length > 0) return;
 
       try {
-        const res = await fetch("http://localhost:5000/api/auth/products", {
-          method: "POST",
+        const isEditing = !!editingId;
+        const url = isEditing
+          ? `http://localhost:5000/api/auth/products/${editingId}`
+          : "http://localhost:5000/api/auth/products";
+        const method = isEditing ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: name.trim(),
             category,
             price: priceNum,
             stock: stockNum,
-            tag: "New",
             image: images[0] || "",
+            images,
             sizes,
+            description: description.trim(),
           }),
         });
         const data = await res.json();
@@ -152,10 +174,14 @@
           price: created.price,
           stock: stockNum,
           sizes,
-          description: description.trim(),
-          images: images.slice(0, 4),
+          description: created.description || description.trim(),
+          images: (created.images || images).slice(0, 4),
         };
-        setProducts((prev) => [next, ...prev]);
+        setProducts((prev) =>
+          isEditing
+            ? prev.map((p) => (p.id === created.id ? next : p))
+            : [next, ...prev]
+        );
         setName("");
         setCategory("Women");
         setPrice("");
@@ -164,11 +190,24 @@
         setDescription("");
         setPhotos([]);
         setErrors({});
-        toast.success("Product added");
+        setEditingId(null);
+        toast.success(isEditing ? "Product updated" : "Product added");
       } catch (err) {
         console.error(err);
-        toast.error("Failed to add product");
+        toast.error("Failed to save product");
       }
+    };
+
+    const handleEdit = (product: AdminProductRecord) => {
+      setEditingId(product.id);
+      setName(product.name);
+      setCategory(product.category);
+      setPrice(String(product.price));
+      setStock(String(product.stock));
+      setSizes(product.sizes || []);
+      setDescription(product.description || "");
+      setPhotos((product.images || []).slice(0, 4));
+      setErrors({});
     };
 
     const handleDelete = async (id: string) => {
@@ -234,7 +273,7 @@
               Add new product
             </h2>
             <form
-              onSubmit={handleAdd}
+              onSubmit={handleSubmit}
               className="mt-4 grid gap-4 text-sm text-gray-800 sm:grid-cols-3"
             >
               <div className="sm:col-span-1">
@@ -322,6 +361,9 @@
                     );
                   })}
                 </div>
+                {errors.sizes && (
+                  <p className="mt-1 text-xs text-red-600">{errors.sizes}</p>
+                )}
               </div>
 
               <div className="sm:col-span-3">
@@ -393,7 +435,7 @@
                   type="submit"
                   className="rounded-full bg-[#7b1b2b] px-5 py-2 text-sm font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors"
                 >
-                  ADD PRODUCT
+                  {editingId ? "UPDATE PRODUCT" : "ADD PRODUCT"}
                 </button>
               </div>
             </form>
@@ -436,7 +478,14 @@
                             ? product.description.slice(0, 77) + "..."
                             : product.description}
                         </td>
-                        <td className="py-1">
+                        <td className="py-1 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(product)}
+                            className="rounded-full border border-[#7b1b2b] px-3 py-1 text-xs font-semibold tracking-[0.14em] text-[#7b1b2b] hover:bg-[#7b1b2b] hover:text-white transition-colors"
+                          >
+                            EDIT
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(product.id)}

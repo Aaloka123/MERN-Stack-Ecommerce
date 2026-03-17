@@ -7,7 +7,6 @@ type Product = {
   name: string;
   category: string;
   price: number;
-  tag: string;
   image: string;
 };
 
@@ -193,7 +192,7 @@ const New = () => {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  onClick={() => navigate("/productdetail")}
+                  onClick={() => navigate(`/productdetail/${product.id}`)}
                   className="group rounded-xl bg-[#fdedd6] shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
                 >
                   <div className="h-56 bg-[#e0c79f] flex items-center justify-center overflow-hidden">
@@ -205,7 +204,7 @@ const New = () => {
                   </div>
                   <div className="p-4 space-y-1 bg-[#f7ddbc]">
                     <p className="text-xs uppercase tracking-[0.2em] text-[#7b1b2b]">
-                      {product.tag}
+                      {product.category}
                     </p>
                     <h2 className="text-sm sm:text-base font-semibold text-gray-900">
                       {product.name}

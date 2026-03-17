@@ -1,38 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Timg1 from "../assets/Timg1.svg";
-import Timg2 from "../assets/Timg2.svg";
-import Timg3 from "../assets/Timg3.svg";
-import Timg4 from "../assets/Timg4.svg";
 
-const products = [
-  {
-    id: "P-101",
-    name: "Handwoven cotton kurta",
-    price: "Rs. 2,499.00",
-    image: Timg1,
-  },
-  {
-    id: "P-102",
-    name: "Floral print dress",
-    price: "Rs. 2,899.00",
-    image: Timg2,
-  },
-  {
-    id: "P-103",
-    name: "Embroidered dupatta",
-    price: "Rs. 1,599.00",
-    image: Timg3,
-  },
-  {
-    id: "P-104",
-    name: "Classic linen shirt",
-    price: "Rs. 1,999.00",
-    image: Timg4,
-  },
-];
+type Product = {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+};
 
 const Suggestion: React.FC = () => {
+  const [items, setItems] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/products");
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          setItems(
+            data.products.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: p.image,
+            }))
+          );
+        }
+      } catch {
+        // ignore, keep empty
+      }
+    };
+    fetchSuggestions();
+  }, []);
+
   return (
     <div className="bg-secondaray px-0 sm:px-2 lg:px-4 py-10">
       <div className="h-1 bg-primary w-full" />
@@ -42,12 +42,12 @@ const Suggestion: React.FC = () => {
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-10 mt-6">
-        {products.map(({ id, image, name, price }) => (
+        {items.map(({ id, image, name, price }) => (
           <div
             key={id}
             className="text-center group cursor-pointer transition-all duration-300"
           >
-            <Link to="/productdetail">
+            <Link to={`/productdetail/${id}`}>
               <div className="overflow-hidden rounded-lg bg-white shadow-sm border border-[#e6ddd0]">
                 <img
                   src={image}
@@ -61,7 +61,7 @@ const Suggestion: React.FC = () => {
               {name}
             </p>
             <p className="text-gray-500 transition-colors duration-300 group-hover:text-primary">
-              {price}
+              Rs. {price.toLocaleString("en-IN")}
             </p>
           </div>
         ))}
