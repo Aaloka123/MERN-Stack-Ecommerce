@@ -76,9 +76,9 @@ const AdminUser: React.FC = () => {
               No users found. Customers will appear here after they sign up.
             </p>
           ) : (
-            <div className="overflow-x-auto text-xs text-gray-800">
+            <div className="overflow-x-auto text-sm text-gray-800">
               <table className="min-w-full border-separate border-spacing-y-2">
-                <thead className="text-[11px] uppercase tracking-[0.16em] text-gray-500">
+                <thead className="text-xs uppercase tracking-[0.16em] text-gray-500">
                   <tr>
                     <th className="text-left">Name</th>
                     <th className="text-left">Email</th>
@@ -98,7 +98,7 @@ const AdminUser: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDelete(user.id)}
-                          className="rounded-full border border-red-500 px-3 py-1 text-[11px] font-semibold tracking-[0.14em] text-red-600 hover:bg-red-600 hover:text-white transition-colors"
+                          className="rounded-full border border-red-500 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-red-600 hover:bg-red-600 hover:text-white transition-colors"
                         >
                           DELETE
                         </button>

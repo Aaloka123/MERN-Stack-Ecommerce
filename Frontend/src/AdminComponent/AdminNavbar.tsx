@@ -14,7 +14,7 @@ const AdminNavbar: React.FC = () => {
     "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors";
 
   return (
-    <aside className="h-screen w-60 bg-[#7b1b2b] text-[#fdf4ee] flex flex-col border-r border-[#915066]">
+    <aside className="sticky top-0 h-screen w-60 bg-[#7b1b2b] text-[#fdf4ee] flex flex-col border-r border-[#915066]">
       <div className="px-5 py-6 border-b border-[#915066]">
         <p className="text-lg font-extrabold leading-tight">Aaloka Admin</p>
       </div>

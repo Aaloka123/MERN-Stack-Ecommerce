@@ -13,6 +13,7 @@ import AdminProduct from './AdminPages/AdminProduct';
 import AdminSetting from './AdminPages/AdminSetting';
 import AdminUser from './AdminPages/AdminUser';
 import AdminOrder from './AdminPages/AdminOrder';
+import Productdetail from './UserPages/Productdetail';
 
 const App = () => {
   return <div>
@@ -25,6 +26,7 @@ const App = () => {
       <Route path="/about" element={<About />} /> 
       <Route path="/cart" element={<Cart />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/productdetail" element={<Productdetail />} /> 
       
       {/* login and signup */}
       <Route path="/login" element={<Login />} />

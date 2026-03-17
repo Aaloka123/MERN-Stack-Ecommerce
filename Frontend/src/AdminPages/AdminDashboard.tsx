@@ -108,7 +108,7 @@ const AdminDashboard: React.FC = () => {
                 />
               </svg>
 
-              <div className="flex-1 space-y-2 text-xs text-gray-800">
+              <div className="flex-1 space-y-2 text-sm text-gray-800">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-[#7b1b2b]" />
@@ -136,12 +136,12 @@ const AdminDashboard: React.FC = () => {
 
           {/* Recent orders */}
           <div className="rounded-2xl bg-white shadow-sm border border-[#e6ddd0] px-6 py-5 lg:col-span-2">
-            <p className="text-xs uppercase tracking-[0.18em] text-gray-500 mb-4">
+            <p className="text-sm uppercase tracking-[0.18em] text-gray-500 mb-4">
               Recent orders
             </p>
-            <div className="overflow-x-auto text-xs text-gray-800">
+            <div className="overflow-x-auto text-sm text-gray-800">
               <table className="min-w-full border-separate border-spacing-y-2">
-                <thead className="text-[11px] uppercase tracking-[0.16em] text-gray-500">
+                <thead className="text-xs uppercase tracking-[0.16em] text-gray-500">
                   <tr>
                     <th className="text-left">Order</th>
                     <th className="text-left">Customer</th>
@@ -175,7 +175,7 @@ const AdminDashboard: React.FC = () => {
                       <td className="py-1">{order.customer}</td>
                       <td className="py-1">{order.total}</td>
                       <td className="py-1">
-                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                           {order.status}
                         </span>
                       </td>
