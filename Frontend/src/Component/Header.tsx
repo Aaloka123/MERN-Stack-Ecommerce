@@ -108,8 +108,17 @@ const Header = () => {
                 BAG
               </NavLink>
             </li>
-            <li className="pb-1 cursor-pointer hover:border-b-2 hover:border-white">
-              ACCOUNT
+            <li className="pb-1">
+              <NavLink
+                to="/login"
+                className={({ isActive }) =>
+                  `cursor-pointer pb-1 ${
+                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
+                  }`
+                }
+              >
+                ACCOUNT
+              </NavLink>
             </li>
           </ul>
         </div>
