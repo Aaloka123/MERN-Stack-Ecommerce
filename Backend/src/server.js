@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import authRoutes from "./routes/auth.js";
 import productsRoutes from "./routes/products.js";
+import cartRoutes from "./routes/cart.js";
 
 dotenv.config();
 
@@ -15,8 +16,10 @@ app.use(express.json({ limit: "10mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", productsRoutes);
+app.use("/api/auth", cartRoutes);
 app.use("/api/admin", authRoutes);
 app.use("/api/admin", productsRoutes);
+app.use("/api/admin", cartRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mern_ecommerce";

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 type Product = {
@@ -10,6 +11,8 @@ type Product = {
   image: string;
 };
 
+const API = "http://localhost:5000/api/auth";
+
 const New = () => {
   const navigate = useNavigate();
   const [serverProducts, setServerProducts] = useState<Product[]>([]);
@@ -18,6 +21,34 @@ const New = () => {
     null
   );
   const [sortBy, setSortBy] = useState<"newest" | "low" | "high">("newest");
+  const [addingId, setAddingId] = useState<string | number | null>(null);
+
+  const getCurrentUserEmail = (): string | null => {
+    try {
+      const raw = sessionStorage.getItem("currentUser");
+      if (!raw) return null;
+      const user = JSON.parse(raw) as { email?: string };
+      return user?.email || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleAddToBag = async (productId: string | number) => {
+    const email = getCurrentUserEmail();
+    if (!email) return;
+    setAddingId(productId);
+    try {
+      const res = await fetch(`${API}/cart/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, productId: String(productId), qty: 1 }),
+      });
+      if (res.ok) toast.success("Added to bag!");
+    } finally {
+      setAddingId(null);
+    }
+  };
 
   const toggleCategory = (cat: string) => {
     setSelectedCategories((prev) =>
@@ -212,9 +243,11 @@ const New = () => {
                     <p className="text-sm text-gray-700">{product.price}</p>
                     <button
                       type="button"
-                      className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors"
+                      onClick={() => handleAddToBag(product.id)}
+                      disabled={addingId === product.id}
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-70"
                     >
-                      ADD TO BAG
+                      {addingId === product.id ? "Adding..." : "ADD TO BAG"}
                     </button>
                   </div>
                 </div>

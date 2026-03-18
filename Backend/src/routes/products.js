@@ -37,6 +37,7 @@ router.post("/products", async (req, res) => {
         name: product.name,
         category: product.category,
         price: product.price,
+        stock: typeof product.stock === "number" ? product.stock : 0,
         image: product.image,
         images: product.images || (product.image ? [product.image] : []),
         description: product.description || "",
@@ -92,6 +93,7 @@ router.put("/products/:id", async (req, res) => {
         name: product.name,
         category: product.category,
         price: product.price,
+        stock: typeof product.stock === "number" ? product.stock : 0,
         image: product.image || "",
         images:
           product.images && product.images.length
@@ -118,6 +120,7 @@ router.get("/products", async (_req, res) => {
       name: p.name,
       category: p.category,
       price: p.price,
+      stock: typeof p.stock === "number" ? p.stock : 0,
       image: p.image || "",
       images: p.images && p.images.length ? p.images : p.image ? [p.image] : [],
       description: p.description || "",
@@ -144,6 +147,7 @@ router.get("/products/:id", async (req, res) => {
         name: product.name,
         category: product.category,
         price: product.price,
+        stock: typeof product.stock === "number" ? product.stock : 0,
         image: product.image || "",
         images:
           (product.images && product.images.length

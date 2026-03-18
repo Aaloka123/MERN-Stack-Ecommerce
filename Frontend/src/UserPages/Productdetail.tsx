@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import Suggestion from "../Component/Suggestion";
@@ -9,12 +10,15 @@ type Product = {
   name: string;
   category: string;
   price: number;
-  tag: string;
+  stock?: number;
+  tag?: string;
   image: string;
   images?: string[];
   description?: string;
   sizes: string[];
 };
+
+const API = "http://localhost:5000/api/auth";
 
 const Productdetail = () => {
   const { id } = useParams();
@@ -22,6 +26,44 @@ const Productdetail = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [addToCartStatus, setAddToCartStatus] = useState<"idle" | "adding" | "done" | "login">("idle");
+
+  const getCurrentUserEmail = (): string | null => {
+    try {
+      const raw = sessionStorage.getItem("currentUser");
+      if (!raw) return null;
+      const user = JSON.parse(raw) as { email?: string };
+      return user?.email || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleAddToCart = async () => {
+    const email = getCurrentUserEmail();
+    if (!email) {
+      setAddToCartStatus("login");
+      return;
+    }
+    if (!product?.id) return;
+    setAddToCartStatus("adding");
+    try {
+      const res = await fetch(`${API}/cart/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, productId: product.id, qty: 1 }),
+      });
+      await res.json();
+      if (res.ok) {
+        setAddToCartStatus("done");
+        toast.success("Added to bag!");
+      } else {
+        setAddToCartStatus("idle");
+      }
+    } catch {
+      setAddToCartStatus("idle");
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -140,6 +182,10 @@ const Productdetail = () => {
                   </p>
                 </div>
 
+                <p className="text-sm text-gray-600">
+                  Stock: {typeof product.stock === "number" ? product.stock : 0} available
+                </p>
+
                 {/* Size + actions */}
                 {product.sizes && product.sizes.length > 0 && (
                   <div className="space-y-2">
@@ -169,15 +215,19 @@ const Productdetail = () => {
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
                     type="button"
-                    disabled={!selectedSize}
+                    disabled={!selectedSize || addToCartStatus === "adding"}
+                    onClick={handleAddToCart}
                     className={`rounded-full px-6 py-2 text-sm font-semibold tracking-[0.16em] text-white transition-colors ${
                       selectedSize
                         ? "bg-[#7b1b2b] hover:bg-[#5c131f]"
                         : "bg-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    ADD TO CART
+                    {addToCartStatus === "adding" ? "Adding..." : "ADD TO CART"}
                   </button>
+                  {addToCartStatus === "login" && (
+                    <p className="text-xs text-amber-700">Please log in to add to cart.</p>
+                  )}
                 </div>
               </div>
             </div>

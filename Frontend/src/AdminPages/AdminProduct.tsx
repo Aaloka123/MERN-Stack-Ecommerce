@@ -79,9 +79,9 @@
                   name: p.name,
                   category: p.category,
                   price: p.price,
-                  stock: 0,
+                  stock: typeof p.stock === "number" ? p.stock : 0,
                   sizes: p.sizes || [],
-                  description: "",
+                  description: p.description || "",
                   images,
                 };
               })
