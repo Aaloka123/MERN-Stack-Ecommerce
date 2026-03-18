@@ -11,6 +11,7 @@ const Header = () => {
   >([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [failedImageIds, setFailedImageIds] = useState<Set<string | number>>(new Set());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isLoggedIn =
     typeof window !== "undefined" &&
     !!sessionStorage.getItem("currentUser");
@@ -56,6 +57,22 @@ const Header = () => {
     setSearchTerm(name);
     setShowSuggestions(false);
     navigate(`/productdetail/${id}`);
+  };
+
+  const navItems = useMemo(
+    () => [
+      { to: "/", label: "HOME" },
+      { to: "/shop", label: "SHOP" },
+      { to: "/new", label: "NEW" },
+      { to: "/about", label: "ABOUT" },
+      { to: "/cart", label: "BAG" },
+      { to: isLoggedIn ? "/profile" : "/login", label: isLoggedIn ? "PROFILE" : "ACCOUNT" },
+    ],
+    [isLoggedIn]
+  );
+
+  const handleNavClick = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -144,83 +161,67 @@ const Header = () => {
 
       {/* Navigation bar */}
       <div className="w-full px-6 lg:px-20 pb-4 pt-2">
-        <div className="w-full bg-[#7b1b2b] shadow-sm">
-          <ul className="flex items-center justify-center gap-10 px-8 py-3 text-[11px] sm:text-xs font-semibold tracking-[0.18em] text-white">
-            <li className="pb-1">
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
-                  }`
-                }
-              >
-                HOME
-              </NavLink>
-            </li>
-            <li className="pb-1">
-              <NavLink
-                to="/shop"
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
-                  }`
-                }
-              >
-                SHOP
-              </NavLink>
-            </li>
-            <li className="pb-1">
-              <NavLink
-                to="/new"
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
-                  }`
-                }
-              >
-                NEW
-              </NavLink>
-            </li>
-            <li className="pb-1">
-              <NavLink
-                to="/about"
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
-                  }`
-                }
-              >
-                ABOUT
-              </NavLink>
-            </li>
-            <li className="pb-1">
-              <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive ? 'border-b-2 border-white' : 'hover:border-b-2 hover:border-white'
-                  }`
-                }
-              >
-                BAG
-              </NavLink>
-            </li>
-            <li className="pb-1">
-              <NavLink
-                to={isLoggedIn ? "/profile" : "/login"}
-                className={({ isActive }) =>
-                  `cursor-pointer pb-1 ${
-                    isActive
-                      ? "border-b-2 border-white"
-                      : "hover:border-b-2 hover:border-white"
-                  }`
-                }
-              >
-                {isLoggedIn ? "PROFILE" : "ACCOUNT"}
-              </NavLink>
-            </li>
-          </ul>
+        <div className="w-full bg-[#7b1b2b] relative">
+          {/* Mobile hamburger */}
+          <div className="flex items-center justify-center px-6 py-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden absolute right-6 inline-flex items-center justify-center text-white p-2 focus:outline-none focus:ring-0"
+            >
+              <Icon
+                icon={mobileMenuOpen ? "mdi:close" : "mdi:menu"}
+                width={20}
+                height={20}
+              />
+            </button>
+
+            {/* Desktop nav */}
+            <ul className="hidden md:flex items-center justify-center gap-10 px-8 py-3 text-[11px] sm:text-xs font-semibold tracking-[0.18em] text-white">
+              {navItems.map((item) => (
+                <li key={item.to} className="pb-1">
+                  <NavLink
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `cursor-pointer pb-1 ${
+                        isActive
+                          ? "border-b-2 border-white"
+                          : "hover:border-b-2 hover:border-white"
+                      }`
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Mobile menu */}
+          {mobileMenuOpen && (
+            <ul className="md:hidden pb-4 px-6 text-sm font-semibold tracking-[0.06em] text-white flex flex-col items-center gap-3">
+              {navItems.map((item) => (
+                <li key={item.to} className="w-full text-center">
+                  <NavLink
+                    to={item.to}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      `block w-full rounded-md py-2 ${
+                        isActive
+                          ? "bg-white/10"
+                          : "hover:bg-white/10"
+                      }`
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </header>
