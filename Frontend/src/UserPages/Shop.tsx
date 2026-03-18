@@ -239,40 +239,49 @@ const Shop = () => {
               </h1>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => navigate(`/productdetail/${product.id}`)}
-                  className="group rounded-xl bg-[#fdedd6] shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
-                >
-                  <div className="h-56 bg-[#e0c79f] flex items-center justify-center overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
-                    />
+            {products.length === 0 ? (
+              <p className="mt-6 text-sm text-gray-700">
+                No products are available in the shop right now. Please check back
+                later.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    onClick={() => navigate(`/productdetail/${product.id}`)}
+                    className="group rounded-xl bg-[#fdedd6] shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                  >
+                    <div className="h-56 bg-[#e0c79f] flex items-center justify-center overflow-hidden">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-4 space-y-1 bg-[#f7ddbc]">
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#7b1b2b]">
+                        {product.category}
+                      </p>
+                      <h2 className="text-sm sm:text-base font-semibold text-gray-900">
+                        {product.name}
+                      </h2>
+                      <p className="text-sm text-gray-700">
+                        Rs. {product.price.toLocaleString("en-IN")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleAddToBag(product.id)}
+                        disabled={addingId === product.id}
+                        className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-70"
+                      >
+                        {addingId === product.id ? "Adding..." : "ADD TO BAG"}
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-4 space-y-1 bg-[#f7ddbc]">
-                    <p className="text-xs uppercase tracking-[0.2em] text-[#7b1b2b]">
-                      {product.category}
-                    </p>
-                    <h2 className="text-sm sm:text-base font-semibold text-gray-900">
-                      {product.name}
-                    </h2>
-                    <p className="text-sm text-gray-700">{product.price}</p>
-                    <button
-                      type="button"
-                      onClick={() => handleAddToBag(product.id)}
-                      disabled={addingId === product.id}
-                      className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-70"
-                    >
-                      {addingId === product.id ? "Adding..." : "ADD TO BAG"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </main>

@@ -226,9 +226,12 @@ const AdminOrder: React.FC = () => {
                                 className={`${base} ${colorClass}`}
                               >
                                 {STATUS_OPTIONS.filter((s) => {
-                                  if (s === "cancelled") return false; // admin cannot select cancelled
-                                  const currentIndex =
-                                    STATUS_OPTIONS.indexOf(order.status);
+                                  // Show 'cancelled' only when the order is already cancelled,
+                                  // so admin can see it but not move orders into cancelled.
+                                  if (s === "cancelled" && order.status !== "cancelled") {
+                                    return false;
+                                  }
+                                  const currentIndex = STATUS_OPTIONS.indexOf(order.status);
                                   const optionIndex = STATUS_OPTIONS.indexOf(s);
                                   // Only allow current or forward statuses in the dropdown
                                   return optionIndex >= currentIndex;
