@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 
@@ -19,6 +21,30 @@ const Cart: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [storeClosed, setStoreClosed] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!userEmail || items.length === 0 || storeClosed) return;
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch(`${API}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setItems([]);
+        toast.success("Order placed successfully!");
+      } else {
+        toast.error(data.message || "Failed to place order");
+      }
+    } catch {
+      toast.error("Failed to place order");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   useEffect(() => {
     const raw = sessionStorage.getItem("currentUser");
@@ -119,9 +145,22 @@ const Cart: React.FC = () => {
       <Header />
 
       <main className="px-6 lg:px-20 py-10">
-        <h1 className="text-2xl font-extrabold text-[#7b1b2b] tracking-tight mb-6">
-          Your Bag
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <h1 className="text-2xl font-extrabold text-[#7b1b2b] tracking-tight">
+            Your Bag
+          </h1>
+          {userEmail && (
+            <Link
+              to="/my-orders"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#7b1b2b] px-4 py-2 text-xs font-semibold tracking-[0.12em] text-[#7b1b2b] hover:bg-[#7b1b2b] hover:text-white transition-colors shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              View my orders
+            </Link>
+          )}
+        </div>
 
         {storeClosed && (
           <div className="mb-6 rounded-xl bg-amber-100 border border-amber-300 px-4 py-3 text-sm font-medium text-amber-800">
@@ -246,10 +285,12 @@ const Cart: React.FC = () => {
                 </p>
               )}
               <button
-                disabled={items.length === 0 || storeClosed}
+                type="button"
+                disabled={items.length === 0 || storeClosed || checkoutLoading}
+                onClick={handleCheckout}
                 className="mt-6 w-full rounded-full bg-[#7b1b2b] px-4 py-3 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                PROCEED TO CHECKOUT
+                {checkoutLoading ? "Placing order..." : "PROCEED TO CHECKOUT"}
               </button>
             </aside>
           )}

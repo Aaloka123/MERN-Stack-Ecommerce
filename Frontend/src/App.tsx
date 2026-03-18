@@ -16,6 +16,7 @@ import AdminSetting from "./AdminPages/AdminSetting";
 import AdminUser from "./AdminPages/AdminUser";
 import AdminOrder from "./AdminPages/AdminOrder";
 import Productdetail from "./UserPages/Productdetail";
+import MyOrders from "./UserPages/MyOrders";
 
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({
   children,
@@ -61,6 +62,14 @@ const App = () => {
             element={
               <RequireAuth>
                 <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <RequireAuth>
+                <MyOrders />
               </RequireAuth>
             }
           />
