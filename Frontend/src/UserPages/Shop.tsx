@@ -10,6 +10,7 @@ type Product = {
   category: string;
   price: number;
   image: string;
+  stock?: number;
 };
 
 const API = "http://localhost:5000/api/auth";
@@ -38,6 +39,11 @@ const Shop = () => {
   };
 
   const handleAddToBag = async (productId: string | number) => {
+    const product = serverProducts.find((p) => p.id === productId);
+    if (product && typeof product.stock === "number" && product.stock <= 0) {
+      toast.error("This product is out of stock.");
+      return;
+    }
     const email = getCurrentUserEmail();
     if (!email) return;
     setAddingId(productId);

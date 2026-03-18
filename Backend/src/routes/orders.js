@@ -2,6 +2,7 @@ import express from "express";
 import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
 import Setting from "../models/Setting.js";
+import Product from "../models/Product.js";
 
 const router = express.Router();
 
@@ -24,6 +25,32 @@ router.post("/orders", async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
+    // Check and update stock for each product in the cart
+    // First, verify that all products exist and have enough stock
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        return res
+          .status(400)
+          .json({ message: `Product ${item.name} is no longer available.` });
+      }
+      const available = typeof product.stock === "number" ? product.stock : 0;
+      if (available < item.qty) {
+        return res.status(400).json({
+          message: `Not enough stock for ${product.name}. Available: ${available}, requested: ${item.qty}.`,
+        });
+      }
+    }
+
+    // All good: decrement stock for each product
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId);
+      if (!product) continue;
+      const available = typeof product.stock === "number" ? product.stock : 0;
+      product.stock = Math.max(0, available - item.qty);
+      await product.save();
+    }
+
     const subtotal = cart.items.reduce((sum, i) => sum + i.price * i.qty, 0);
     const tax = Math.round(subtotal * 0.13);
     const total = subtotal + tax;
@@ -35,6 +62,7 @@ router.post("/orders", async (req, res) => {
         name: i.name,
         price: i.price,
         qty: i.qty,
+        image: i.image || "",
       })),
       subtotal,
       tax,
@@ -88,6 +116,39 @@ router.get("/orders", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to load orders" });
+  }
+});
+
+// User: cancel own order (only when pending or confirmed)
+router.patch("/orders/:id/cancel", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userEmail = (email || "").trim().toLowerCase();
+    if (!userEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const order = await Order.findOne({ _id: req.params.id, userEmail });
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (!["pending", "confirmed"].includes(order.status)) {
+      return res
+        .status(400)
+        .json({ message: "Only pending or confirmed orders can be cancelled" });
+    }
+
+    order.status = "cancelled";
+    await order.save();
+
+    return res.json({
+      success: true,
+      order: { id: order._id.toString(), status: order.status },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to cancel order" });
   }
 });
 

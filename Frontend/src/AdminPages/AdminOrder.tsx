@@ -9,6 +9,7 @@ type OrderItem = {
   name: string;
   price: number;
   qty: number;
+  image?: string;
 };
 
 type Order = {
@@ -31,6 +32,7 @@ const AdminOrder: React.FC = () => {
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
 
   const fetchOrders = async () => {
     try {
@@ -51,6 +53,28 @@ const AdminOrder: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
+  }, []);
+
+  // fetch product images for orders that may not have image stored on items
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${API.replace("/api/admin", "/api/auth")}/products`);
+        const data = await res.json();
+        if (res.ok && Array.isArray(data.products)) {
+          const map: Record<string, string> = {};
+          data.products.forEach((p: any) => {
+            if (p.id && (p.image || (p.images && p.images[0]))) {
+              map[p.id] = p.image || p.images[0];
+            }
+          });
+          setProductImages(map);
+        }
+      } catch {
+        // ignore; fall back to item.image only
+      }
+    };
+    fetchProducts();
   }, []);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -214,17 +238,41 @@ const AdminOrder: React.FC = () => {
                                 </p>
                               )}
                               <p className="font-medium text-gray-700 mb-2">Items:</p>
-                              <ul className="space-y-1">
-                                {order.items.map((item, idx) => (
-                                  <li key={idx} className="flex justify-between text-gray-800">
-                                    <span>
-                                      {item.name} × {item.qty}
-                                    </span>
-                                    <span>
-                                      Rs. {(item.price * item.qty).toLocaleString("en-IN")}
-                                    </span>
-                                  </li>
-                                ))}
+                              <ul className="space-y-2">
+                                {order.items.map((item, idx) => {
+                                  const imgSrc =
+                                    item.image ||
+                                    (item.productId
+                                      ? productImages[item.productId]
+                                      : "");
+                                  return (
+                                    <li
+                                      key={idx}
+                                      className="flex justify-between items-center text-gray-800"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        {imgSrc && (
+                                          <div className="h-16 w-16 rounded-md bg-[#e0c79f] overflow-hidden flex items-center justify-center">
+                                            <img
+                                              src={imgSrc}
+                                              alt={item.name}
+                                              className="h-full w-full object-cover"
+                                            />
+                                          </div>
+                                        )}
+                                        <span>
+                                          {item.name} × {item.qty}
+                                        </span>
+                                      </div>
+                                      <span>
+                                        Rs.{" "}
+                                        {(item.price * item.qty).toLocaleString(
+                                          "en-IN"
+                                        )}
+                                      </span>
+                                    </li>
+                                  );
+                                })}
                               </ul>
                               <div className="mt-2 pt-2 border-t border-[#e2c9a5] flex justify-between text-gray-700">
                                 <span>Subtotal</span>

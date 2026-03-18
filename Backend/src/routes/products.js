@@ -1,5 +1,6 @@
 import express from "express";
 import Product from "../models/Product.js";
+import Cart from "../models/Cart.js";
 
 const router = express.Router();
 
@@ -173,7 +174,13 @@ router.delete("/products/:id", async (req, res) => {
     if (!deleted) {
       return res.status(404).json({ message: "Product not found" });
     }
-    return res.json({ message: "Product deleted" });
+    // Remove this product from all carts
+    await Cart.updateMany(
+      {},
+      { $pull: { items: { productId: deleted._id } } }
+    );
+
+    return res.json({ message: "Product deleted and removed from all carts" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to delete product" });

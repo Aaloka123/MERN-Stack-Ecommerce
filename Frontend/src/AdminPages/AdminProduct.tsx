@@ -467,7 +467,15 @@
                         <td className="py-1 pr-4">
                           Rs. {product.price.toLocaleString("en-IN")}
                         </td>
-                        <td className="py-1 pr-4">{product.stock}</td>
+                        <td className="py-1 pr-4">
+                          {product.stock === 0 ? (
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-3 py-0.5 text-xs font-semibold text-red-700">
+                              Out of stock
+                            </span>
+                          ) : (
+                            product.stock
+                          )}
+                        </td>
                         <td className="py-1 pr-4">
                           {product.sizes && product.sizes.length
                             ? product.sizes.join(", ")

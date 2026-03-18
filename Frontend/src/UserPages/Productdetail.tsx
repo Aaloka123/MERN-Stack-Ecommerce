@@ -207,7 +207,9 @@ const Productdetail = () => {
                 </div>
 
                 <p className="text-sm text-gray-600">
-                  Stock: {typeof product.stock === "number" ? product.stock : 0} available
+                  {typeof product.stock === "number" && product.stock <= 0
+                    ? "Out of stock"
+                    : `Stock: ${typeof product.stock === "number" ? product.stock : 0} available`}
                 </p>
 
                 {/* Size + actions */}
@@ -244,15 +246,28 @@ const Productdetail = () => {
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
                     type="button"
-                    disabled={!selectedSize || addToCartStatus === "adding" || storeClosed}
+                    disabled={
+                      !selectedSize ||
+                      addToCartStatus === "adding" ||
+                      storeClosed ||
+                      (typeof product.stock === "number" && product.stock <= 0)
+                    }
                     onClick={handleAddToCart}
                     className={`rounded-full px-6 py-2 text-sm font-semibold tracking-[0.16em] text-white transition-colors ${
-                      selectedSize && !storeClosed
+                      selectedSize &&
+                      !storeClosed &&
+                      !(typeof product.stock === "number" && product.stock <= 0)
                         ? "bg-[#7b1b2b] hover:bg-[#5c131f]"
                         : "bg-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    {addToCartStatus === "adding" ? "Adding..." : storeClosed ? "STORE CLOSED" : "ADD TO CART"}
+                    {addToCartStatus === "adding"
+                      ? "Adding..."
+                      : storeClosed
+                      ? "STORE CLOSED"
+                      : typeof product.stock === "number" && product.stock <= 0
+                      ? "OUT OF STOCK"
+                      : "ADD TO CART"}
                   </button>
                   {addToCartStatus === "login" && !storeClosed && (
                     <p className="text-xs text-amber-700">Please log in to add to cart.</p>
