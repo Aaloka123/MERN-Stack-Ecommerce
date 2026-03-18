@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { toast } from "react-toastify";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
+
+const API = "http://localhost:5000/api/admin";
 
 const AdminSetting: React.FC = () => {
   const [storeName, setStoreName] = useState("Aaloka Store");
@@ -9,6 +11,8 @@ const AdminSetting: React.FC = () => {
   const [lowStockThreshold, setLowStockThreshold] = useState("5");
   const [orderNotification, setOrderNotification] = useState(true);
   const [storeClosed, setStoreClosed] = useState(false);
+  const [storeStatusLoading, setStoreStatusLoading] = useState(true);
+  const [storeStatusSaving, setStoreStatusSaving] = useState(false);
 
   const [errors, setErrors] = useState<{ storeName?: string; email?: string }>(
     {}
@@ -25,6 +29,47 @@ const AdminSetting: React.FC = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    const fetchStoreStatus = async () => {
+      try {
+        const res = await fetch(`${API}/store-status`);
+        const data = await res.json();
+        if (res.ok && typeof data.storeClosed === "boolean") {
+          setStoreClosed(data.storeClosed);
+        }
+      } catch {
+        // keep default false
+      } finally {
+        setStoreStatusLoading(false);
+      }
+    };
+    fetchStoreStatus();
+  }, []);
+
+  const handleToggleStoreClosed = async () => {
+    const next = !storeClosed;
+    setStoreStatusSaving(true);
+    try {
+      const res = await fetch(`${API}/store-status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeClosed: next }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStoreClosed(data.storeClosed);
+        toast.success(next ? "Store is now closed" : "Store is now open");
+      } else {
+        toast.error("Failed to update store status");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update store status");
+    } finally {
+      setStoreStatusSaving(false);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,25 +321,30 @@ const AdminSetting: React.FC = () => {
               </h2>
             </div>
             <p className="text-sm text-gray-600">
-              Temporarily hide the storefront without deleting products.
+              When closed, products stay visible but users cannot add to cart or proceed to checkout.
             </p>
-            <button
-              type="button"
-              onClick={() => setStoreClosed((prev) => !prev)}
-              className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold tracking-[0.16em] text-white
-              ${
-                storeClosed
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
-              }`}
-            >
-              <Icon
-                icon={storeClosed ? "mdi:alert-circle-outline" : "mdi:check-circle-outline"}
-                width={16}
-                height={16}
-              />
-              {storeClosed ? "STORE CLOSED" : "STORE OPEN"}
-            </button>
+            {storeStatusLoading ? (
+              <p className="text-sm text-gray-500">Loading...</p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleToggleStoreClosed}
+                disabled={storeStatusSaving}
+                className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold tracking-[0.16em] text-white disabled:opacity-60
+                ${
+                  storeClosed
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                <Icon
+                  icon={storeClosed ? "mdi:alert-circle-outline" : "mdi:check-circle-outline"}
+                  width={16}
+                  height={16}
+                />
+                {storeStatusSaving ? "Saving..." : storeClosed ? "STORE CLOSED" : "STORE OPEN"}
+              </button>
+            )}
           </div>
         </section>
       </main>

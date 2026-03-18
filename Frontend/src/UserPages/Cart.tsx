@@ -18,6 +18,7 @@ const Cart: React.FC = () => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [storeClosed, setStoreClosed] = useState(false);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("currentUser");
@@ -56,6 +57,21 @@ const Cart: React.FC = () => {
     };
     fetchCart();
   }, [userEmail]);
+
+  useEffect(() => {
+    const fetchStoreStatus = async () => {
+      try {
+        const res = await fetch(`${API}/store-status`);
+        const data = await res.json();
+        if (res.ok && typeof data.storeClosed === "boolean") {
+          setStoreClosed(data.storeClosed);
+        }
+      } catch {
+        setStoreClosed(false);
+      }
+    };
+    fetchStoreStatus();
+  }, []);
 
   const updateCartFromResponse = (cart: { items: CartItem[] }) => {
     if (cart?.items) setItems(cart.items);
@@ -106,6 +122,12 @@ const Cart: React.FC = () => {
         <h1 className="text-2xl font-extrabold text-[#7b1b2b] tracking-tight mb-6">
           Your Bag
         </h1>
+
+        {storeClosed && (
+          <div className="mb-6 rounded-xl bg-amber-100 border border-amber-300 px-4 py-3 text-sm font-medium text-amber-800">
+            Store is currently closed. You can view your bag but checkout is unavailable.
+          </div>
+        )}
 
         {!userEmail && !loading && (
           <p className="text-sm text-gray-700 py-6">
@@ -218,8 +240,13 @@ const Cart: React.FC = () => {
                 </div>
               </div>
 
+              {storeClosed && (
+                <p className="mt-4 text-sm text-amber-700 font-medium">
+                  Store is currently closed. Checkout is unavailable.
+                </p>
+              )}
               <button
-                disabled={items.length === 0}
+                disabled={items.length === 0 || storeClosed}
                 className="mt-6 w-full rounded-full bg-[#7b1b2b] px-4 py-3 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 PROCEED TO CHECKOUT

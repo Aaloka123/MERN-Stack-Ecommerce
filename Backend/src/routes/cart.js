@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
+import Setting from "../models/Setting.js";
 
 const router = express.Router();
 
@@ -47,6 +48,11 @@ router.get("/cart", async (req, res) => {
 // Add to cart or increase qty
 router.post("/cart/add", async (req, res) => {
   try {
+    const storeSetting = await Setting.findOne().lean();
+    if (storeSetting?.storeClosed) {
+      return res.status(403).json({ message: "Store is closed. You cannot add items to cart." });
+    }
+
     const { email, productId, qty = 1 } = req.body;
     const addQty = Math.max(1, typeof qty === "number" ? qty : 1);
     if (!email || !productId) {

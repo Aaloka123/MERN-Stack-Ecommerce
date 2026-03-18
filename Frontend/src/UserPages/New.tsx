@@ -39,12 +39,20 @@ const New = () => {
     if (!email) return;
     setAddingId(productId);
     try {
+      const statusRes = await fetch(`${API}/store-status`);
+      const statusData = await statusRes.json();
+      if (statusData.storeClosed) {
+        toast.error("Store is closed. You cannot add items to cart.");
+        return;
+      }
       const res = await fetch(`${API}/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, productId: String(productId), qty: 1 }),
       });
+      const data = await res.json();
       if (res.ok) toast.success("Added to bag!");
+      else if (data.message) toast.error(data.message);
     } finally {
       setAddingId(null);
     }

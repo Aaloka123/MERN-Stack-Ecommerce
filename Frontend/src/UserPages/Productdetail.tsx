@@ -27,6 +27,22 @@ const Productdetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [addToCartStatus, setAddToCartStatus] = useState<"idle" | "adding" | "done" | "login">("idle");
+  const [storeClosed, setStoreClosed] = useState(false);
+
+  useEffect(() => {
+    const fetchStoreStatus = async () => {
+      try {
+        const res = await fetch(`${API}/store-status`);
+        const data = await res.json();
+        if (res.ok && typeof data.storeClosed === "boolean") {
+          setStoreClosed(data.storeClosed);
+        }
+      } catch {
+        setStoreClosed(false);
+      }
+    };
+    fetchStoreStatus();
+  }, []);
 
   const getCurrentUserEmail = (): string | null => {
     try {
@@ -48,17 +64,25 @@ const Productdetail = () => {
     if (!product?.id) return;
     setAddToCartStatus("adding");
     try {
+      const statusRes = await fetch(`${API}/store-status`);
+      const statusData = await statusRes.json();
+      if (statusData.storeClosed) {
+        toast.error("Store is closed. You cannot add items to cart.");
+        setAddToCartStatus("idle");
+        return;
+      }
       const res = await fetch(`${API}/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, productId: product.id, qty: 1 }),
       });
-      await res.json();
+      const data = await res.json();
       if (res.ok) {
         setAddToCartStatus("done");
         toast.success("Added to bag!");
       } else {
         setAddToCartStatus("idle");
+        toast.error(data.message || "Failed to add to cart");
       }
     } catch {
       setAddToCartStatus("idle");
@@ -212,20 +236,25 @@ const Productdetail = () => {
                   </div>
                 )}
 
+                {storeClosed && (
+                  <div className="rounded-xl bg-amber-100 border border-amber-300 px-4 py-3 text-sm font-medium text-amber-800">
+                    Store is currently closed. Adding to cart is unavailable.
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
                     type="button"
-                    disabled={!selectedSize || addToCartStatus === "adding"}
+                    disabled={!selectedSize || addToCartStatus === "adding" || storeClosed}
                     onClick={handleAddToCart}
                     className={`rounded-full px-6 py-2 text-sm font-semibold tracking-[0.16em] text-white transition-colors ${
-                      selectedSize
+                      selectedSize && !storeClosed
                         ? "bg-[#7b1b2b] hover:bg-[#5c131f]"
                         : "bg-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    {addToCartStatus === "adding" ? "Adding..." : "ADD TO CART"}
+                    {addToCartStatus === "adding" ? "Adding..." : storeClosed ? "STORE CLOSED" : "ADD TO CART"}
                   </button>
-                  {addToCartStatus === "login" && (
+                  {addToCartStatus === "login" && !storeClosed && (
                     <p className="text-xs text-amber-700">Please log in to add to cart.</p>
                   )}
                 </div>
