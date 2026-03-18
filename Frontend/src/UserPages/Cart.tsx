@@ -20,6 +20,10 @@ const Cart: React.FC = () => {
     );
   };
 
+  const handleRemove = (id: number) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const tax = Math.round(subtotal * 0.13);
   const total = subtotal + tax;
@@ -58,7 +62,7 @@ const Cart: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                   <div className="flex items-center rounded-full border border-[#e2c9a5] px-4 py-2 text-sm text-gray-800">
                     <button
                       type="button"
@@ -79,6 +83,17 @@ const Cart: React.FC = () => {
                   <p className="text-sm font-semibold text-[#7b1b2b]">
                     Rs. {item.price.toLocaleString("en-IN")}.00
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(item.id)}
+                    className="p-2 rounded-lg text-gray-500 hover:text-[#7b1b2b] hover:bg-[#e2c9a5] transition-colors"
+                    title="Remove from bag"
+                    aria-label="Remove from bag"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
