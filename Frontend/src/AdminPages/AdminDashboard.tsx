@@ -1,7 +1,134 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
 
+const API_ADMIN = "http://localhost:5000/api/admin";
+const API_AUTH = "http://localhost:5000/api/auth";
+
+type OrderSummary = {
+  id: string;
+  userEmail: string;
+  total: number;
+  status: string;
+  createdAt: string;
+};
+
+type UserSummary = {
+  id: string;
+  email: string;
+  role: string;
+  createdAt: string;
+};
+
+type ProductSummary = {
+  id: string;
+  category: string;
+  price: number;
+  stock: number;
+};
+
 const AdminDashboard: React.FC = () => {
+  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [users, setUsers] = useState<UserSummary[]>([]);
+  const [products, setProducts] = useState<ProductSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const [ordersRes, usersRes, productsRes] = await Promise.all([
+          fetch(`${API_ADMIN}/orders`),
+          fetch(`${API_ADMIN}/users`),
+          fetch(`${API_AUTH}/products`),
+        ]);
+
+        const [ordersData, usersData, productsData] = await Promise.all([
+          ordersRes.json(),
+          usersRes.json(),
+          productsRes.json(),
+        ]);
+
+        if (ordersRes.ok && Array.isArray(ordersData.orders)) {
+          setOrders(
+            ordersData.orders.map((o: any) => ({
+              id: o.id,
+              userEmail: o.userEmail,
+              total: o.total,
+              status: o.status,
+              createdAt: o.createdAt,
+            }))
+          );
+        }
+
+        if (usersRes.ok && Array.isArray(usersData.users)) {
+          setUsers(
+            usersData.users.map((u: any) => ({
+              id: u.id,
+              email: u.email,
+              role: u.role,
+              createdAt: u.createdAt,
+            }))
+          );
+        }
+
+        if (productsRes.ok && Array.isArray(productsData.products)) {
+          setProducts(
+            productsData.products.map((p: any) => ({
+              id: p.id,
+              category: p.category,
+              price: p.price,
+              stock: typeof p.stock === "number" ? p.stock : 0,
+            }))
+          );
+        }
+      } catch {
+        // ignore errors; show whatever data we have
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, []);
+
+  const totalRevenue = useMemo(
+    () =>
+      orders
+        .filter((o) => o.status !== "cancelled")
+        .reduce(
+          (sum, o) => sum + (typeof o.total === "number" ? o.total : 0),
+          0
+        ),
+    [orders]
+  );
+
+  const totalOrders = orders.length;
+  const totalCustomers = users.filter((u) => u.role !== "admin").length;
+
+  const categoryShares = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    const total = Object.values(counts).reduce((s, v) => s + v, 0) || 1;
+    return {
+      women: Math.round(((counts["Women"] || 0) / total) * 100),
+      men: Math.round(((counts["Men"] || 0) / total) * 100),
+      accessories: Math.round(((counts["Accessories"] || 0) / total) * 100),
+    };
+  }, [products]);
+
+  const recentOrders = useMemo(
+    () =>
+      [...orders]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+        )
+        .slice(0, 5),
+    [orders]
+  );
+
   return (
     <div className="flex min-h-screen bg-[#f4f0ea]">
       <AdminNavbar />
@@ -12,7 +139,9 @@ const AdminDashboard: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2b1b1b]">
               Dashboard
             </h1>
-
+            <p className="text-xs text-gray-600 mt-1">
+              Overview of orders, customers, and products.
+            </p>
           </div>
           <p className="text-xs tracking-[0.18em] uppercase text-gray-600">
             Today · {new Date().toLocaleDateString()}
@@ -26,33 +155,47 @@ const AdminDashboard: React.FC = () => {
               Revenue
             </p>
             <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">
-              Rs. 86,400
+              Rs. {totalRevenue.toLocaleString("en-IN")}
             </p>
-            <p className="mt-1 text-xs text-emerald-600">+18% vs yesterday</p>
+            <p className="mt-1 text-xs text-gray-600">
+              {loading ? "Calculating..." : "All-time revenue (non-cancelled orders)"}
+            </p>
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-5 shadow-sm border border-[#e6ddd0]">
             <p className="text-xs uppercase tracking-[0.18em] text-gray-500">
               Orders
             </p>
-            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">142</p>
-            <p className="mt-1 text-xs text-emerald-600">+9% vs yesterday</p>
+            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">
+              {totalOrders}
+            </p>
+            <p className="mt-1 text-xs text-gray-600">
+              {loading ? "" : "Total orders in system"}
+            </p>
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-5 shadow-sm border border-[#e6ddd0]">
             <p className="text-xs uppercase tracking-[0.18em] text-gray-500">
-              New customers
+              Customers
             </p>
-            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">37</p>
-            <p className="mt-1 text-xs text-gray-600">Mostly returning visitors</p>
+            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">
+              {totalCustomers}
+            </p>
+            <p className="mt-1 text-xs text-gray-600">
+              Registered customers (excluding admins)
+            </p>
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-5 shadow-sm border border-[#e6ddd0]">
             <p className="text-xs uppercase tracking-[0.18em] text-gray-500">
-              Refund rate
+              Products
             </p>
-            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">1.2%</p>
-            <p className="mt-1 text-xs text-emerald-600">Healthy</p>
+            <p className="mt-2 text-xl font-extrabold text-[#7b1b2b]">
+              {products.length}
+            </p>
+            <p className="mt-1 text-xs text-gray-600">
+              Currently active products
+            </p>
           </div>
         </section>
 
@@ -64,7 +207,7 @@ const AdminDashboard: React.FC = () => {
             </p>
 
             <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
-              {/* Simple donut chart using SVG */}
+              {/* Simple donut chart using SVG, driven by categoryShares */}
               <svg
                 viewBox="0 0 36 36"
                 className="h-32 w-32 text-[#e6ddd0]"
@@ -79,7 +222,9 @@ const AdminDashboard: React.FC = () => {
                 <circle
                   className="fill-none stroke-[#7b1b2b]"
                   strokeWidth="3"
-                  strokeDasharray="45 55"
+                  strokeDasharray={`${categoryShares.women} ${
+                    100 - categoryShares.women
+                  }`}
                   strokeDashoffset="25"
                   strokeLinecap="round"
                   cx="18"
@@ -89,7 +234,9 @@ const AdminDashboard: React.FC = () => {
                 <circle
                   className="fill-none stroke-[#c87a5b]"
                   strokeWidth="3"
-                  strokeDasharray="30 70"
+                  strokeDasharray={`${categoryShares.men} ${
+                    100 - categoryShares.men
+                  }`}
                   strokeDashoffset="-20"
                   strokeLinecap="round"
                   cx="18"
@@ -99,7 +246,9 @@ const AdminDashboard: React.FC = () => {
                 <circle
                   className="fill-none stroke-[#e0a96d]"
                   strokeWidth="3"
-                  strokeDasharray="25 75"
+                  strokeDasharray={`${categoryShares.accessories} ${
+                    100 - categoryShares.accessories
+                  }`}
                   strokeDashoffset="-55"
                   strokeLinecap="round"
                   cx="18"
@@ -114,21 +263,27 @@ const AdminDashboard: React.FC = () => {
                     <span className="h-2 w-2 rounded-full bg-[#7b1b2b]" />
                     Women
                   </span>
-                  <span className="font-semibold">45%</span>
+                  <span className="font-semibold">
+                    {categoryShares.women}%
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-[#c87a5b]" />
                     Men
                   </span>
-                  <span className="font-semibold">30%</span>
+                  <span className="font-semibold">
+                    {categoryShares.men}%
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-[#e0a96d]" />
                     Accessories
                   </span>
-                  <span className="font-semibold">25%</span>
+                  <span className="font-semibold">
+                    {categoryShares.accessories}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -150,33 +305,29 @@ const AdminDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    {
-                      id: "#A1024",
-                      customer: "Saanvi Patel",
-                      total: "Rs. 5,400",
-                      status: "Packed",
-                    },
-                    {
-                      id: "#A1023",
-                      customer: "Arjun Mehra",
-                      total: "Rs. 11,200",
-                      status: "Shipped",
-                    },
-                    {
-                      id: "#A1022",
-                      customer: "Meera Iyer",
-                      total: "Rs. 3,950",
-                      status: "Delivered",
-                    },
-                  ].map((order) => (
+                  {recentOrders.map((order) => (
                     <tr key={order.id} className="align-middle">
-                      <td className="py-1">{order.id}</td>
-                      <td className="py-1">{order.customer}</td>
-                      <td className="py-1">{order.total}</td>
+                      <td className="py-1 font-mono text-xs text-[#7b1b2b]">
+                        #{order.id.slice(-6)}
+                      </td>
+                      <td className="py-1">{order.userEmail}</td>
                       <td className="py-1">
-                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                          {order.status}
+                        Rs. {order.total.toLocaleString("en-IN")}
+                      </td>
+                      <td className="py-1">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            order.status === "delivered"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "cancelled"
+                              ? "bg-gray-200 text-gray-700"
+                              : order.status === "shipped"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </span>
                       </td>
                     </tr>
