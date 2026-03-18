@@ -26,6 +26,14 @@ type Order = {
 
 const STATUS_OPTIONS = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
 const AdminOrder: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,23 +202,44 @@ const AdminOrder: React.FC = () => {
                           Rs. {order.total.toLocaleString("en-IN")}
                         </td>
                         <td className="py-3 pr-4">
-                          <select
-                            value={order.status}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                            disabled={updatingId === order.id}
-                            className="rounded-lg border border-[#e2c9a5] bg-white px-2 py-1.5 text-xs font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#7b1b2b] disabled:opacity-60"
-                          >
-                            {STATUS_OPTIONS.filter((s) => {
-                              const currentIndex = STATUS_OPTIONS.indexOf(order.status);
-                              const optionIndex = STATUS_OPTIONS.indexOf(s);
-                              // Only allow current or forward statuses in the dropdown
-                              return optionIndex >= currentIndex;
-                            }).map((s) => (
-                              <option key={s} value={s}>
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
-                              </option>
-                            ))}
-                          </select>
+                          {(() => {
+                            const base =
+                              "rounded-full border px-3 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#7b1b2b] disabled:opacity-60";
+                            const colorClass =
+                              order.status === "delivered"
+                                ? "bg-green-100 text-green-800 border-green-200"
+                                : order.status === "cancelled"
+                                ? "bg-gray-200 text-gray-700 border-gray-300"
+                                : order.status === "shipped"
+                                ? "bg-blue-100 text-blue-800 border-blue-200"
+                                : "bg-amber-100 text-amber-800 border-amber-200"; // pending / confirmed
+
+                            return (
+                              <select
+                                value={order.status}
+                                onChange={(e) =>
+                                  handleStatusChange(order.id, e.target.value)
+                                }
+                                disabled={
+                                  updatingId === order.id || order.status === "cancelled"
+                                }
+                                className={`${base} ${colorClass}`}
+                              >
+                                {STATUS_OPTIONS.filter((s) => {
+                                  if (s === "cancelled") return false; // admin cannot select cancelled
+                                  const currentIndex =
+                                    STATUS_OPTIONS.indexOf(order.status);
+                                  const optionIndex = STATUS_OPTIONS.indexOf(s);
+                                  // Only allow current or forward statuses in the dropdown
+                                  return optionIndex >= currentIndex;
+                                }).map((s) => (
+                                  <option key={s} value={s}>
+                                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                                  </option>
+                                ))}
+                              </select>
+                            );
+                          })()}
                           {updatingId === order.id && (
                             <span className="ml-1 text-xs text-gray-500">Updating...</span>
                           )}

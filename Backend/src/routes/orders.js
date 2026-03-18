@@ -178,11 +178,11 @@ router.get("/orders/:id", async (req, res) => {
   }
 });
 
-// Update order status (admin)
+// Update order status (admin) – admin cannot cancel, only move forward up to delivered
 router.patch("/orders/:id", async (req, res) => {
   try {
     const { status } = req.body;
-    const allowed = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+    const allowed = ["pending", "confirmed", "shipped", "delivered"];
     if (!status || !allowed.includes(status)) {
       return res.status(400).json({ message: "Valid status is required" });
     }
