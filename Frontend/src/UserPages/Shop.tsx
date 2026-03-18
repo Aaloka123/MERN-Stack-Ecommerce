@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
@@ -17,6 +17,7 @@ const API = "http://localhost:5000/api/auth";
 
 const Shop = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [serverProducts, setServerProducts] = useState<Product[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceFilter, setPriceFilter] = useState<"under5" | "5to10" | "above10" | null>(
@@ -94,11 +95,22 @@ const Shop = () => {
     fetchProducts();
   }, []);
 
+  const searchParam = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("search")?.toLowerCase().trim() || "";
+  }, [location.search]);
+
   const products = useMemo(() => {
     let result = [...serverProducts];
 
     if (selectedCategories.length) {
       result = result.filter((p) => selectedCategories.includes(p.category));
+    }
+
+    if (searchParam) {
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(searchParam)
+      );
     }
 
     if (priceFilter) {

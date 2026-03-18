@@ -290,7 +290,7 @@ const Cart: React.FC = () => {
                 onClick={handleCheckout}
                 className="mt-6 w-full rounded-full bg-[#7b1b2b] px-4 py-3 text-xs font-semibold tracking-[0.16em] text-white hover:bg-[#5c131f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {checkoutLoading ? "Placing order..." : "PROCEED TO CHECKOUT"}
+                {checkoutLoading ? "Placing order..." : "BUY"}
               </button>
             </aside>
           )}
