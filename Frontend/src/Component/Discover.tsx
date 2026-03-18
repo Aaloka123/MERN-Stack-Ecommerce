@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Top from "../assets/Top.svg";
 import bgimage from "../assets/bgimage.svg";
 
 const Discover = () => {
+  const navigate = useNavigate();
   return (
     <div className="relative w-full px-4 sm:px-8 lg:px-20 pt-8 h-[550px]">
       {/* Background Image */}
@@ -23,7 +25,11 @@ const Discover = () => {
             are designed to celebrate your individuality with comfort, class,
             and confidence.
           </p>
-          <button className="bg-[#7a1e2c] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-[#5c1621] transition text-sm sm:text-base">
+          <button
+            type="button"
+            onClick={() => navigate("/shop")}
+            className="bg-[#7a1e2c] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-[#5c1621] transition text-sm sm:text-base"
+          >
             BUY NOW
           </button>
         </div>

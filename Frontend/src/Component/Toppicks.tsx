@@ -76,7 +76,7 @@ const Toppicks = () => {
       </div>
 
       <div className="flex justify-center mt-10">
-        <Link to="/">
+        <Link to="/shop">
           <button className="inline-flex items-center justify-center rounded-full bg-[#7b1b2b] text-white font-semibold h-12 sm:h-14 text-sm sm:text-base px-8 sm:px-12 py-3 mt-6 mb-8 transition-all duration-300 hover:bg-[#5c131f] hover:shadow-lg hover:scale-105 hover:underline tracking-[0.12em]">
             SHOP NOW
           </button>
