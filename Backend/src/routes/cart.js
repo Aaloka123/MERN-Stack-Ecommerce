@@ -3,20 +3,22 @@ import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import Setting from "../models/Setting.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Get cart for user (by email)
-router.get("/cart", async (req, res) => {
+router.get("/cart", requireAuth, async (req, res) => {
   try {
-    const email = (req.query.email || "").trim().toLowerCase();
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    const tokenEmail = req.user.email;
+    const emailFromClient = (req.query.email || "").trim().toLowerCase();
+    if (emailFromClient && emailFromClient !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
-    let cart = await Cart.findOne({ userEmail: email });
+    let cart = await Cart.findOne({ userEmail: tokenEmail });
     if (!cart) {
-      cart = await Cart.create({ userEmail: email, items: [] });
+      cart = await Cart.create({ userEmail: tokenEmail, items: [] });
     }
 
     const itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
@@ -46,7 +48,7 @@ router.get("/cart", async (req, res) => {
 });
 
 // Add to cart or increase qty
-router.post("/cart/add", async (req, res) => {
+router.post("/cart/add", requireAuth, async (req, res) => {
   try {
     const storeSetting = await Setting.findOne().lean();
     if (storeSetting?.storeClosed) {
@@ -55,11 +57,15 @@ router.post("/cart/add", async (req, res) => {
 
     const { email, productId, qty = 1 } = req.body;
     const addQty = Math.max(1, typeof qty === "number" ? qty : 1);
-    if (!email || !productId) {
-      return res.status(400).json({ message: "Email and productId are required" });
+    if (!productId) {
+      return res.status(400).json({ message: "productId is required" });
     }
 
-    const userEmail = String(email).trim().toLowerCase();
+    const userEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== userEmail) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid product id" });
     }
@@ -127,14 +133,18 @@ router.post("/cart/add", async (req, res) => {
 });
 
 // Update item qty (or remove if qty <= 0)
-router.put("/cart/item", async (req, res) => {
+router.put("/cart/item", requireAuth, async (req, res) => {
   try {
     const { email, productId, qty } = req.body;
-    if (!email || !productId) {
-      return res.status(400).json({ message: "Email and productId are required" });
+    if (!productId) {
+      return res.status(400).json({ message: "productId is required" });
     }
 
-    const userEmail = String(email).trim().toLowerCase();
+    const userEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== userEmail) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ message: "Invalid product id" });
     }
@@ -189,15 +199,23 @@ router.put("/cart/item", async (req, res) => {
 });
 
 // Remove one product from cart
-router.delete("/cart/item", async (req, res) => {
+router.delete("/cart/item", requireAuth, async (req, res) => {
   try {
+    const tokenEmail = req.user.email;
     const email = (req.query.email || req.body.email || "").trim().toLowerCase();
     const productId = req.query.productId || req.body.productId;
     if (!email || !productId) {
-      return res.status(400).json({ message: "Email and productId are required" });
+      // email can be omitted; token decides the user
+      if (!productId) {
+        return res.status(400).json({ message: "productId is required" });
+      }
     }
 
-    let cart = await Cart.findOne({ userEmail: email });
+    if (email && email !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    let cart = await Cart.findOne({ userEmail: tokenEmail });
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }

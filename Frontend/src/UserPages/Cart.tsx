@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
 const API = "http://localhost:5000/api/auth";
 
@@ -29,7 +30,7 @@ const Cart: React.FC = () => {
     try {
       const res = await fetch(`${API}/orders`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email: userEmail }),
       });
       const data = await res.json();
@@ -68,7 +69,10 @@ const Cart: React.FC = () => {
     }
     const fetchCart = async () => {
       try {
-        const res = await fetch(`${API}/cart?email=${encodeURIComponent(userEmail)}`);
+        const res = await fetch(
+          `${API}/cart?email=${encodeURIComponent(userEmail)}`,
+          { headers: getJsonAuthHeaders() as Record<string, string> }
+        );
         const data = await res.json();
         if (res.ok && data.cart?.items) {
           setItems(data.cart.items);
@@ -112,7 +116,7 @@ const Cart: React.FC = () => {
     try {
       const res = await fetch(`${API}/cart/item`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email: userEmail, productId, qty: newQty }),
       });
       const data = await res.json();
@@ -127,7 +131,7 @@ const Cart: React.FC = () => {
     try {
       const res = await fetch(
         `${API}/cart/item?email=${encodeURIComponent(userEmail)}&productId=${encodeURIComponent(productId)}`,
-        { method: "DELETE" }
+        { method: "DELETE", headers: getAuthHeaders() as Record<string, string> }
       );
       const data = await res.json();
       if (res.ok && data.cart) updateCartFromResponse(data.cart);

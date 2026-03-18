@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import Suggestion from "../Component/Suggestion";
+import { getJsonAuthHeaders } from "../utils/authFetch";
 
 type Product = {
   id: string;
@@ -73,7 +74,7 @@ const Productdetail = () => {
       }
       const res = await fetch(`${API}/cart/add`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email, productId: product.id, qty: 1 }),
       });
       const data = await res.json();

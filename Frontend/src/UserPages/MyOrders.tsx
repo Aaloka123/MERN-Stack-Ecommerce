@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
 const API = "http://localhost:5000/api/auth";
 
@@ -62,8 +63,9 @@ const MyOrders: React.FC = () => {
     const fetchOrders = async () => {
       try {
         const res = await fetch(
-          `${API}/orders?email=${encodeURIComponent(userEmail)}`
-        );
+        `${API}/orders?email=${encodeURIComponent(userEmail)}`,
+        { headers: getAuthHeaders() as Record<string, string> }
+      );
         const data = await res.json();
         if (res.ok && Array.isArray(data.orders)) {
           setOrders(data.orders);
@@ -106,7 +108,7 @@ const MyOrders: React.FC = () => {
     try {
       const res = await fetch(`${API}/orders/${orderId}/cancel`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email: userEmail }),
       });
       const data = await res.json();

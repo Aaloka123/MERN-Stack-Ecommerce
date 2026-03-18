@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
 const API = "http://localhost:5000/api/admin";
 
@@ -26,14 +27,6 @@ type Order = {
 
 const STATUS_OPTIONS = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
 const AdminOrder: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +37,9 @@ const AdminOrder: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API}/orders`);
+      const res = await fetch(`${API}/orders`, {
+        headers: getAuthHeaders() as Record<string, string>,
+      });
       const data = await res.json();
       if (res.ok && Array.isArray(data.orders)) {
         setOrders(data.orders);
@@ -90,7 +85,7 @@ const AdminOrder: React.FC = () => {
     try {
       const res = await fetch(`${API}/orders/${orderId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();

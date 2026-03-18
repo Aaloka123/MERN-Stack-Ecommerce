@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
 type StoredUser = {
   id?: string;
@@ -98,7 +99,7 @@ const Profile: React.FC = () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/update-profile", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({
           email: current.email || email,
           name: fullName,
@@ -152,7 +153,7 @@ const Profile: React.FC = () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email, oldPassword, newPassword }),
       });
       const data = await res.json();
@@ -201,6 +202,7 @@ const Profile: React.FC = () => {
     if (current?.id) {
       fetch(`http://localhost:5000/api/admin/users/${current.id}`, {
         method: "DELETE",
+        headers: getAuthHeaders() as Record<string, string>,
       })
         .then(async (res) => {
           const data = await res.json().catch(() => ({}));
@@ -359,7 +361,7 @@ const Profile: React.FC = () => {
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[#7b1b2b]/80">
                       Email address
                     </p>
-                    <p className="mt-1 rounded-lg bg-[#fdedd6] px-3 py-2 break-words">
+                    <p className="mt-1 rounded-lg bg-[#fdedd6] px-3 py-2 wrap-break-word">
                       {email || "Not set"}
                     </p>
                   </div>
@@ -368,7 +370,7 @@ const Profile: React.FC = () => {
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[#7b1b2b]/80">
                       Phone number
                     </p>
-                    <p className="mt-1 rounded-lg bg-[#fdedd6] px-3 py-2 break-words">
+                    <p className="mt-1 rounded-lg bg-[#fdedd6] px-3 py-2 wrap-break-word">
                       {phone || "Not set"}
                     </p>
                   </div>

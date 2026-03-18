@@ -1,11 +1,12 @@
 import express from "express";
 import Product from "../models/Product.js";
 import Cart from "../models/Cart.js";
+import { requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Products: create
-router.post("/products", async (req, res) => {
+router.post("/products", requireAdmin, async (req, res) => {
   try {
     const { name, category, price, image, images, stock, sizes, description } = req.body;
     if (!name || !category || typeof price !== "number") {
@@ -52,7 +53,7 @@ router.post("/products", async (req, res) => {
 });
 
 // Products: update by id (admin)
-router.put("/products/:id", async (req, res) => {
+router.put("/products/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, category, price, image, images, stock, sizes, description } = req.body;
@@ -167,7 +168,7 @@ router.get("/products/:id", async (req, res) => {
 });
 
 // Products: delete by id (admin)
-router.delete("/products/:id", async (req, res) => {
+router.delete("/products/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Product.findByIdAndDelete(id);

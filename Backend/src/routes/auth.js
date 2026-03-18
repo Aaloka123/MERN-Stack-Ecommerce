@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { requireAdmin, requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -73,14 +74,18 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/update-profile", async (req, res) => {
+router.post("/update-profile", requireAuth, async (req, res) => {
   try {
     const { email, name, newEmail, phone } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+
+    // User can only update their own profile
+    const tokenEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: tokenEmail });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -107,16 +112,23 @@ router.post("/update-profile", async (req, res) => {
   }
 });
 
-router.post("/change-password", async (req, res) => {
+router.post("/change-password", requireAuth, async (req, res) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
-    if (!email || !oldPassword || !newPassword) {
+    if (!oldPassword || !newPassword) {
       return res
         .status(400)
-        .json({ message: "Email, old password and new password are required" });
+        .json({ message: "old password and new password are required" });
     }
 
-    const user = await User.findOne({ email });
+    // User can only change their own password
+    const tokenEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const user = await User.findOne({ email: tokenEmail });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -138,7 +150,7 @@ router.post("/change-password", async (req, res) => {
 });
 
 // Admin: get all users (oldest signup first)
-router.get("/users", async (_req, res) => {
+router.get("/users", requireAuth, requireAdmin, async (_req, res) => {
   try {
     const users = await User.find().sort({ createdAt: 1 });
     const mapped = users.map((u) => ({
@@ -157,9 +169,15 @@ router.get("/users", async (_req, res) => {
 });
 
 // Admin: delete user by id
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Admin can delete anyone; a normal user can delete only themselves.
+    if (req.user.role !== "admin" && req.user.id !== id) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     const deleted = await User.findByIdAndDelete(id);
     if (!deleted) {
       return res.status(404).json({ message: "User not found" });

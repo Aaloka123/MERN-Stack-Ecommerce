@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
+import { getAuthHeaders } from "../utils/authFetch";
 
 const API_ADMIN = "http://localhost:5000/api/admin";
 const API_AUTH = "http://localhost:5000/api/auth";
@@ -36,8 +37,12 @@ const AdminDashboard: React.FC = () => {
     const fetchAll = async () => {
       try {
         const [ordersRes, usersRes, productsRes] = await Promise.all([
-          fetch(`${API_ADMIN}/orders`),
-          fetch(`${API_ADMIN}/users`),
+          fetch(`${API_ADMIN}/orders`, {
+            headers: getAuthHeaders() as Record<string, string>,
+          }),
+          fetch(`${API_ADMIN}/users`, {
+            headers: getAuthHeaders() as Record<string, string>,
+          }),
           fetch(`${API_AUTH}/products`),
         ]);
 

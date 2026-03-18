@@ -1,5 +1,6 @@
 import express from "express";
 import Setting from "../models/Setting.js";
+import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get("/store-status", async (_req, res) => {
 });
 
 // PUT store status (admin – set store open/closed)
-router.put("/store-status", async (req, res) => {
+router.put("/store-status", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { storeClosed } = req.body;
     const value = storeClosed === true;

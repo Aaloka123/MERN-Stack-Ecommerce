@@ -3,17 +3,20 @@ import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
 import Setting from "../models/Setting.js";
 import Product from "../models/Product.js";
+import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Create order from current cart (user checkout)
-router.post("/orders", async (req, res) => {
+router.post("/orders", requireAuth, async (req, res) => {
   try {
     const { email, shippingAddress } = req.body;
-    const userEmail = (email || "").trim().toLowerCase();
-    if (!userEmail) {
-      return res.status(400).json({ message: "Email is required" });
+    const tokenEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
     }
+    const userEmail = tokenEmail;
 
     const storeSetting = await Setting.findOne().lean();
     if (storeSetting?.storeClosed) {
@@ -96,10 +99,22 @@ router.post("/orders", async (req, res) => {
 });
 
 // List orders – with ?email= returns that user's orders; without email returns all (admin)
-router.get("/orders", async (req, res) => {
+router.get("/orders", requireAuth, async (req, res) => {
   try {
     const email = (req.query.email || "").trim().toLowerCase();
-    const filter = email ? { userEmail: email } : {};
+    const isAdmin = req.user?.role === "admin";
+
+    let filter = {};
+    if (email) {
+      if (!req.user || (!isAdmin && req.user.email !== email)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      filter = { userEmail: email };
+    } else {
+      // If user didn't pass email, user can only see their own orders.
+      filter = isAdmin ? {} : { userEmail: req.user.email };
+    }
+
     const orders = await Order.find(filter).sort({ createdAt: -1 }).lean();
     const list = orders.map((o) => ({
       id: o._id.toString(),
@@ -120,13 +135,15 @@ router.get("/orders", async (req, res) => {
 });
 
 // User: cancel own order (only when pending or confirmed)
-router.patch("/orders/:id/cancel", async (req, res) => {
+router.patch("/orders/:id/cancel", requireAuth, async (req, res) => {
   try {
     const { email } = req.body;
-    const userEmail = (email || "").trim().toLowerCase();
-    if (!userEmail) {
-      return res.status(400).json({ message: "Email is required" });
+    const tokenEmail = req.user.email;
+    const emailFromClient = email ? String(email).trim().toLowerCase() : "";
+    if (emailFromClient && emailFromClient !== tokenEmail) {
+      return res.status(403).json({ message: "Forbidden" });
     }
+    const userEmail = tokenEmail;
 
     const order = await Order.findOne({ _id: req.params.id, userEmail });
     if (!order) {
@@ -153,7 +170,7 @@ router.patch("/orders/:id/cancel", async (req, res) => {
 });
 
 // Get one order by id (admin)
-router.get("/orders/:id", async (req, res) => {
+router.get("/orders/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).lean();
     if (!order) {
@@ -179,7 +196,7 @@ router.get("/orders/:id", async (req, res) => {
 });
 
 // Update order status (admin) – admin cannot cancel, only move forward up to delivered
-router.patch("/orders/:id", async (req, res) => {
+router.patch("/orders/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const allowed = ["pending", "confirmed", "shipped", "delivered"];

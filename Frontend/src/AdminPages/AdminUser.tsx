@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
 import { toast } from "react-toastify";
+import { getAuthHeaders } from "../utils/authFetch";
 
 type AdminUserRecord = {
   id: string;
@@ -17,7 +18,9 @@ const AdminUser: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/admin/users");
+        const res = await fetch("http://localhost:5000/api/admin/users", {
+          headers: getAuthHeaders() as Record<string, string>,
+        });
         const data = await res.json();
         if (!res.ok) {
           toast.error(data.message || "Failed to load users");
@@ -40,6 +43,7 @@ const AdminUser: React.FC = () => {
         `http://localhost:5000/api/admin/users/${id}`,
         {
           method: "DELETE",
+          headers: getAuthHeaders() as Record<string, string>,
         }
       );
       const data = await res.json();
@@ -113,7 +117,7 @@ const AdminUser: React.FC = () => {
                     <tr key={user.id} className="align-middle">
                       <td className="py-1 pr-4">{index + 1}</td>
                      <td className="py-1 pr-4">{user.name}</td>
-                      <td className="py-1 pr-4 break-words max-w-[200px]">
+                      <td className="py-1 pr-4 wrap-break-word max-w-[200px]">
                         {user.email}
                       </td>
                       <td className="py-1 pr-4">{user.phone}</td>

@@ -1,6 +1,7 @@
   import React, { useEffect, useState } from "react";
   import AdminNavbar from "../AdminComponent/AdminNavbar";
   import { toast } from "react-toastify";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
   type AdminProductRecord = {
     id: string;
@@ -148,7 +149,7 @@
 
         const res = await fetch(url, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers: getJsonAuthHeaders() as Record<string, string>,
           body: JSON.stringify({
             name: name.trim(),
             category,
@@ -217,6 +218,7 @@
           `http://localhost:5000/api/auth/products/${id}`,
           {
             method: "DELETE",
+            headers: getAuthHeaders() as Record<string, string>,
           }
         );
         const data = await res.json();

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
+import { getJsonAuthHeaders } from "../utils/authFetch";
 
 type Product = {
   id: string | number;
@@ -57,7 +58,7 @@ const Shop = () => {
       }
       const res = await fetch(`${API}/cart/add`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email, productId: String(productId), qty: 1 }),
       });
       const data = await res.json();

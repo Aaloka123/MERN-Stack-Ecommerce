@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { toast } from "react-toastify";
 import AdminNavbar from "../AdminComponent/AdminNavbar";
+import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
 
 const API = "http://localhost:5000/api/admin";
 
@@ -53,7 +54,7 @@ const AdminSetting: React.FC = () => {
     try {
       const res = await fetch(`${API}/store-status`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ storeClosed: next }),
       });
       const data = await res.json();
@@ -134,7 +135,7 @@ const AdminSetting: React.FC = () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/change-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email, oldPassword, newPassword }),
       });
       const data = await res.json();
