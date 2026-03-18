@@ -89,11 +89,18 @@ const Header = () => {
 
           {/* Center logo */}
           <div className="flex justify-center flex-1">
-            <img
-              src={logo}
-              alt="Aaloka logo"
-              className="h-16 w-16 object-contain drop-shadow-sm"
-            />
+            <Link
+              to="/"
+              aria-label="Go to home"
+              className="flex items-center justify-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <img
+                src={logo}
+                alt="Aaloka logo"
+                className="h-16 w-16 object-contain drop-shadow-sm"
+              />
+            </Link>
           </div>
 
           {/* Search box */}

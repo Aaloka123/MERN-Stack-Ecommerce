@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
+import { useNavigate } from "react-router-dom";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import { getAuthHeaders, getJsonAuthHeaders } from "../utils/authFetch";
@@ -34,6 +35,7 @@ const getInitials = (name?: string) => {
 };
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -175,7 +177,8 @@ const Profile: React.FC = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("currentUser");
     sessionStorage.removeItem("ROLE");
-    window.location.href = "/login";
+    toast.error("Logout");
+    navigate("/login");
   };
 
   const handleDeleteAccount = () => {

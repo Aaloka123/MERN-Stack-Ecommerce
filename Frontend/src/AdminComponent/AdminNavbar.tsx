@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "react-toastify";
 import { NavLink, useNavigate } from "react-router-dom";
 
 const AdminNavbar: React.FC = () => {
@@ -7,6 +8,7 @@ const AdminNavbar: React.FC = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("currentUser");
     sessionStorage.removeItem("ROLE");
+    toast.error("logout");
     navigate("/login");
   };
 
