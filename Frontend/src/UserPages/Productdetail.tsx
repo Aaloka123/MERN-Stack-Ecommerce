@@ -59,7 +59,8 @@ const Productdetail = () => {
   const handleAddToCart = async () => {
     const email = getCurrentUserEmail();
     if (!email) {
-      setAddToCartStatus("login");
+      setAddToCartStatus("idle");
+      toast.error("Please log in to add to cart.");
       return;
     }
     if (!product?.id) return;
@@ -270,9 +271,6 @@ const Productdetail = () => {
                       ? "OUT OF STOCK"
                       : "ADD TO CART"}
                   </button>
-                  {addToCartStatus === "login" && !storeClosed && (
-                    <p className="text-xs text-amber-700">Please log in to add to cart.</p>
-                  )}
                 </div>
               </div>
             </div>
