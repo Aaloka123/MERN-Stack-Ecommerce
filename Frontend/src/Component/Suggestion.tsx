@@ -48,11 +48,11 @@ const Suggestion: React.FC = () => {
             className="text-center group cursor-pointer transition-all duration-300"
           >
             <Link to={`/productdetail/${id}`}>
-              <div className="overflow-hidden rounded-lg bg-white shadow-sm border border-[#e6ddd0]">
+              <div className="overflow-hidden rounded-lg bg-white shadow-sm border border-[#e6ddd0] aspect-[4/5]">
                 <img
                   src={image}
                   alt={name}
-                  className="w-full h-auto max-h-96 transition-transform duration-300 group-hover:scale-105 object-contain"
+                  className="w-full h-full transition-transform duration-300 group-hover:scale-105 object-cover"
                 />
               </div>
             </Link>
