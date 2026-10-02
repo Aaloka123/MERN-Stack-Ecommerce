@@ -5,6 +5,7 @@ import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import Suggestion from "../Component/Suggestion";
 import { getJsonAuthHeaders } from "../utils/authFetch";
+import { API_CART, API_PRODUCTS, API_SETTINGS } from "../config/api";
 
 type Product = {
   id: string;
@@ -19,8 +20,6 @@ type Product = {
   sizes: string[];
 };
 
-const API = "http://localhost:5000/api/auth";
-
 const Productdetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
@@ -33,7 +32,7 @@ const Productdetail = () => {
   useEffect(() => {
     const fetchStoreStatus = async () => {
       try {
-        const res = await fetch(`${API}/store-status`);
+        const res = await fetch(`${API_SETTINGS}/store-status`);
         const data = await res.json();
         if (res.ok && typeof data.storeClosed === "boolean") {
           setStoreClosed(data.storeClosed);
@@ -66,14 +65,14 @@ const Productdetail = () => {
     if (!product?.id) return;
     setAddToCartStatus("adding");
     try {
-      const statusRes = await fetch(`${API}/store-status`);
+      const statusRes = await fetch(`${API_SETTINGS}/store-status`);
       const statusData = await statusRes.json();
       if (statusData.storeClosed) {
         toast.error("Store is closed. You cannot add items to cart.");
         setAddToCartStatus("idle");
         return;
       }
-      const res = await fetch(`${API}/cart/add`, {
+      const res = await fetch(`${API_CART}/add`, {
         method: "POST",
         headers: getJsonAuthHeaders() as Record<string, string>,
         body: JSON.stringify({ email, productId: product.id, qty: 1 }),
@@ -95,9 +94,7 @@ const Productdetail = () => {
     const fetchProduct = async () => {
       if (!id) return;
       try {
-        const res = await fetch(
-          `http://localhost:5000/api/auth/products/${id}`
-        );
+        const res = await fetch(`${API_PRODUCTS}/${id}`);
         const data = await res.json();
         if (res.ok && data.product) {
           setProduct(data.product as Product);
