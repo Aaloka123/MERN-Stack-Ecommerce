@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import Header from "../Component/Header";
 import Footer from "../Component/Footer";
 import google from "../assets/google.svg";
+import { API_AUTH } from "../config/api";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Login: React.FC = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_AUTH}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
