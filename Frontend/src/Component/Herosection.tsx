@@ -14,11 +14,11 @@ const HeroSection = () => {
     >
       <div className=" sm:px-8 lg:px-20 py-12">
         <div className="flex flex-col lg:flex-row gap-8 justify-between items-center">
-          <div className="flex flex-col items-center lg:items-start">
+          <div className="flex flex-col items-center">
             <img
               src={img1}
               alt="Hero 1"
-              className="w-[] max-w-[350px] h-auto lg:h-[550px] transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+              className="w-auto max-w-[350px] h-auto lg:h-[550px] transition-transform duration-300 hover:scale-105 hover:shadow-xl"
             />
             <button
               type="button"
@@ -44,11 +44,11 @@ const HeroSection = () => {
           </div>
 
           {/* Right image + button */}
-          <div className="flex flex-col items-center lg:items-start">
+          <div className="flex flex-col items-center">
             <img
               src={img2}
               alt="Hero 3"
-              className="w-[] max-w-[350px] h-auto lg:h-[550px] transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+              className="w-auto max-w-[350px] h-auto lg:h-[550px] transition-transform duration-300 hover:scale-105 hover:shadow-xl"
             />
             <button
               type="button"
