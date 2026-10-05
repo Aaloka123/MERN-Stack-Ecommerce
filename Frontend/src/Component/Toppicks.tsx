@@ -49,14 +49,14 @@ const Toppicks = () => {
       </div>
 
       {/* Responsive grid like Featured Collection */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-10 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mt-6">
         {toppickItems.map(({ id, image, name, price }) => (
           <div
             key={id}
-            className="text-center group cursor-pointer transition-all duration-300"
+            className="text-center group cursor-pointer transition-all duration-300 bg-white/70 backdrop-blur-sm p-3.5 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1"
           >
             <Link to={`/productdetail/${id}`}>
-              <div className="overflow-hidden rounded-lg">
+              <div className="overflow-hidden rounded-xl bg-white/80 p-2">
                 <img
                   src={image}
                   alt={name}
@@ -65,10 +65,10 @@ const Toppicks = () => {
               </div>
             </Link>
 
-            <p className="mt-2 font-semibold text-lg text-gray-800 transition-colors duration-300 group-hover:text-primary">
+            <p className="mt-3 font-semibold text-lg text-gray-800 transition-colors duration-300 group-hover:text-primary truncate">
               {name}
             </p>
-            <p className="text-gray-500 transition-colors duration-300 group-hover:text-primary">
+            <p className="mt-1 font-medium text-gray-600 transition-colors duration-300 group-hover:text-primary">
               Rs. {price.toLocaleString("en-IN")}
             </p>
           </div>
@@ -77,7 +77,7 @@ const Toppicks = () => {
 
       <div className="flex justify-center mt-10">
         <Link to="/shop">
-          <button className="inline-flex items-center justify-center rounded-full bg-[#7b1b2b] text-white font-semibold h-12 sm:h-14 text-sm sm:text-base px-8 sm:px-12 py-3 mt-6 mb-8 transition-all duration-300 hover:bg-[#5c131f] hover:shadow-lg hover:scale-105 hover:underline tracking-[0.12em]">
+          <button className="inline-flex items-center justify-center rounded-full bg-[#7b1b2b] text-white font-semibold h-12 sm:h-14 text-sm sm:text-base px-8 sm:px-12 py-3 mt-6 mb-8 transition-all duration-300 hover:bg-[#5c131f] hover:shadow-xl hover:scale-105 active:scale-95 tracking-[0.12em] cursor-pointer">
             SHOP NOW
           </button>
         </Link>
