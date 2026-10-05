@@ -81,8 +81,8 @@ const Header = () => {
       <div className="w-full">
         <div className="flex w-full items-center justify-between px-6 lg:px-20 pt-8 pb-6 gap-6">
           {/* Brand text */}
-          <Link to="/" className="flex flex-col">
-            <span className="text-3xl font-extrabold tracking-tight text-black">
+          <Link to="/" className="flex flex-col group">
+            <span className="text-3xl font-extrabold tracking-wider text-black transition-transform duration-300 group-hover:scale-105">
               Aaloka
             </span>
           </Link>
@@ -92,7 +92,7 @@ const Header = () => {
             <Link
               to="/"
               aria-label="Go to home"
-              className="flex items-center justify-center"
+              className="flex items-center justify-center transition-transform duration-300 hover:scale-105"
               onClick={() => setMobileMenuOpen(false)}
             >
               <img
@@ -106,7 +106,7 @@ const Header = () => {
           {/* Search box */}
           <div className="hidden w-64 md:block relative">
             <form onSubmit={handleSubmit}>
-              <div className="flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center gap-2 rounded-full bg-white/85 backdrop-blur-sm px-4 py-2.5 shadow-sm ring-1 ring-black/10 focus-within:ring-2 focus-within:ring-[#7b1b2b]/40 focus-within:bg-white transition-all duration-300">
                 <Icon
                   icon="mdi:magnify"
                   className="text-[#7b1b2b]"
@@ -115,7 +115,7 @@ const Header = () => {
                 />
                 <input
                   type="text"
-                  placeholder="Search"
+                  placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -126,16 +126,16 @@ const Header = () => {
                     // Small timeout so click can register
                     setTimeout(() => setShowSuggestions(false), 120);
                   }}
-                  className="w-full bg-transparent text-sm text-[#7b1b2b] placeholder:text-[#7b1b2b]/70 focus:outline-none"
+                  className="w-full bg-transparent text-sm text-[#7b1b2b] placeholder:text-[#7b1b2b]/60 focus:outline-none"
                 />
               </div>
             </form>
             {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute mt-1 w-full rounded-xl bg-white shadow-lg ring-1 ring-black/5 text-sm text-gray-800 max-h-60 overflow-auto z-20">
+              <ul className="absolute mt-1 w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5 text-sm text-gray-800 max-h-60 overflow-auto z-20">
                 {suggestions.map((p) => (
                   <li
                     key={p.id}
-                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[#f3e1c3]"
+                    className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[#f3e1c3] transition-colors"
                     onMouseDown={() => handleSelectSuggestion(p.id, p.name)}
                   >
                     <div className="h-10 w-10 shrink-0 rounded-md bg-[#e6ddd0] overflow-hidden flex items-center justify-center">
@@ -168,7 +168,7 @@ const Header = () => {
 
       {/* Navigation bar */}
       <div className="w-full px-6 lg:px-20 pb-4 pt-2">
-        <div className="w-full bg-[#7b1b2b] relative">
+        <div className="w-full bg-[#7b1b2b] relative rounded-xl shadow-md overflow-hidden">
           {/* Mobile hamburger */}
           <div className="flex items-center justify-center px-6 py-3">
             <button
@@ -193,10 +193,10 @@ const Header = () => {
                     to={item.to}
                     onClick={handleNavClick}
                     className={({ isActive }) =>
-                      `cursor-pointer pb-1 ${
+                      `cursor-pointer pb-1 transition-all duration-200 ${
                         isActive
-                          ? "border-b-2 border-white"
-                          : "hover:border-b-2 hover:border-white"
+                          ? "border-b-2 border-white opacity-100"
+                          : "opacity-85 hover:opacity-100 hover:border-b-2 hover:border-white/80"
                       }`
                     }
                   >
