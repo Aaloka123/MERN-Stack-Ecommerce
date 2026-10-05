@@ -8,16 +8,16 @@ const CollectionCard = ({ title, image, buttonLabel }: { title: string, image: s
   const words = title.split(" ");
   return (
     <div
-      className="relative w-full h-full bg-cover bg-center overflow-hidden "
+      className="relative w-full h-full bg-cover bg-center overflow-hidden rounded-2xl shadow-md group transition-all duration-500"
       style={{ backgroundImage: `url(${image})` }}
     >
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center">
-      <h2 className="text-[28px] font-extrabold drop-shadow-md leading-tight">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10 flex flex-col items-center justify-center text-white text-center p-4 transition-all duration-300 group-hover:from-black/85">
+        <h2 className="text-[26px] sm:text-[30px] font-extrabold drop-shadow-lg leading-tight tracking-wider transition-transform duration-300 group-hover:scale-105">
           {words.map((word: string, i: number) => (
             <div key={i}>{word}</div>
           ))}
         </h2>
-        <button className="mt-4 bg-primary px-6 py-2 text-white text-[16px] hover:bg-primary/80 transition">
+        <button className="mt-5 rounded-full bg-white text-gray-900 font-semibold tracking-wider px-7 py-2.5 text-sm shadow-lg hover:bg-[#7b1b2b] hover:text-white hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer">
           {buttonLabel}
         </button>
       </div>
@@ -47,7 +47,7 @@ const collections = [
 // CollectionsSection component
 const CollectionsSection = () => {
   return (
-    <div className="flex flex-wrap gap-1 px-20 py-12 justify-between">
+    <div className="flex flex-wrap gap-4 px-4 sm:px-8 lg:px-20 py-12 justify-between">
       {collections.map((item, index) => {
         if (item.title === "ACCESSORIES") {
           return (
