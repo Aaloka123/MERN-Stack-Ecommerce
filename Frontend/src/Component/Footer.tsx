@@ -21,20 +21,20 @@ const Footer = () => {
             Quick Links
           </h3>
           <ul className="mt-3 space-y-2 text-sm text-[#f8e1d6]">
-            <li className="hover:text-white cursor-pointer">
-              <Link to="/">Home</Link>
+            <li>
+              <Link to="/" className="inline-block transition-all duration-200 hover:text-white hover:translate-x-1.5">Home</Link>
             </li>
-            <li className="hover:text-white cursor-pointer">
-              <Link to="/shop">Shop</Link>
+            <li>
+              <Link to="/shop" className="inline-block transition-all duration-200 hover:text-white hover:translate-x-1.5">Shop</Link>
             </li>
-            <li className="hover:text-white cursor-pointer">
-              <Link to="/new">New</Link>
+            <li>
+              <Link to="/new" className="inline-block transition-all duration-200 hover:text-white hover:translate-x-1.5">New</Link>
             </li>
-            <li className="hover:text-white cursor-pointer">
-              <Link to="/about">About</Link>
+            <li>
+              <Link to="/about" className="inline-block transition-all duration-200 hover:text-white hover:translate-x-1.5">About</Link>
             </li>
-            <li className="hover:text-white cursor-pointer">
-              <Link to="/cart">Bag</Link>
+            <li>
+              <Link to="/cart" className="inline-block transition-all duration-200 hover:text-white hover:translate-x-1.5">Bag</Link>
             </li>
           </ul>
         </div>
@@ -44,16 +44,16 @@ const Footer = () => {
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em]">
             Follow Us
           </h3>
-          <ul className="mt-3 space-y-2 text-sm text-[#f8e1d6]">
-            <li className="hover:text-white cursor-pointer">Facebook</li>
-            <li className="hover:text-white cursor-pointer">Instagram</li>
-            <li className="hover:text-white cursor-pointer">Twitter</li>
-          </ul>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#f8e1d6]">
+            <span className="px-3 py-1.5 bg-white/10 rounded-full hover:bg-white/25 hover:text-white transition-all duration-200 cursor-pointer shadow-sm">Facebook</span>
+            <span className="px-3 py-1.5 bg-white/10 rounded-full hover:bg-white/25 hover:text-white transition-all duration-200 cursor-pointer shadow-sm">Instagram</span>
+            <span className="px-3 py-1.5 bg-white/10 rounded-full hover:bg-white/25 hover:text-white transition-all duration-200 cursor-pointer shadow-sm">Twitter</span>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-[#915066]">
-        <p className="py-4 text-center text-xs text-[#f8e1d6]">
+      <div className="border-t border-white/15">
+        <p className="py-4 text-center text-xs tracking-wider text-[#f8e1d6]/90">
           © 2026 Aaloka Store. All rights reserved.
         </p>
       </div>
