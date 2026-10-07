@@ -202,7 +202,15 @@ const HeroSection = () => {
               ? "Couture Whispers of Modern Grace"
               : "The Poetry of Contemporary Grace"}
           </h1>
-          <p className="text-xs sm:text-sm text-[#7b1b2b]/75 mt-2 max-w-xl mx-auto font-normal">
+
+          {/* Ornamental Atelier Royal Motif Divider */}
+          <div className="flex items-center justify-center gap-3 my-2.5 opacity-85">
+            <div className="h-px w-14 sm:w-24 bg-gradient-to-r from-transparent via-[#c59b27]/60 to-[#c59b27]" />
+            <span className="text-[#c59b27] text-xs font-serif tracking-[0.25em]">✦ ❖ ✦</span>
+            <div className="h-px w-14 sm:w-24 bg-gradient-to-l from-transparent via-[#c59b27]/60 to-[#c59b27]" />
+          </div>
+
+          <p className="text-xs sm:text-sm text-[#7b1b2b]/75 max-w-xl mx-auto font-normal">
             Bespoke loom-woven silhouettes uniting timeless royal heritage with effortless modern sensibility.
           </p>
 
