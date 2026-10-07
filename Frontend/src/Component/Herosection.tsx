@@ -391,7 +391,7 @@ const HeroSection = () => {
                   <button
                     type="button"
                     onClick={() => navigate(currentSlide.ctaLink)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#c59b27] text-white px-6 py-2.5 text-xs sm:text-sm font-bold tracking-wider shadow-lg transition-all duration-300 hover:bg-[#dfb743] hover:text-[#58101c] hover:scale-105 active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#c59b27] text-white px-6 py-2.5 text-xs sm:text-sm font-bold tracking-wider shadow-lg transition-all duration-300 hover:bg-[#dfb743] hover:text-[#58101c] hover:shadow-[0_6px_25px_rgba(223,183,67,0.45)] hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <span>{currentSlide.ctaText}</span>
                     <Icon icon="mdi:arrow-right" width={16} />
