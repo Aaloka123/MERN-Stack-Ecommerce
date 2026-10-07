@@ -295,7 +295,7 @@ const HeroSection = () => {
             onMouseLeave={() => setIsCarouselPaused(false)}
           >
             {/* ── CHANGE 5: Dynamic Carousel Container with LCP fetchpriority ── */}
-            <div className="relative w-full max-w-[540px] aspect-[3/4] sm:aspect-[4/4.8] lg:aspect-[4/4.9] rounded-3xl overflow-hidden shadow-2xl border-2 border-[#dfb743]/50 bg-white/50 group transition-all duration-500">
+            <div className="relative w-full max-w-[540px] aspect-[3/4] sm:aspect-[4/4.8] lg:aspect-[4/4.9] rounded-3xl overflow-hidden shadow-2xl border-2 border-[#dfb743]/50 hover:border-[#dfb743] hover:shadow-[0_20px_60px_rgba(223,183,67,0.25)] bg-white/50 group transition-all duration-500">
               <img
                 key={currentSlide.id}
                 src={currentSlide.image}
